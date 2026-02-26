@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">
+  <rect width="800" height="450" fill="#1e1e1e"/>
+  <path d="M360 185 L400 165 L440 185 L440 225 L400 245 L360 225 Z" fill="#252525"/>
+  <path d="M385 205 L385 195 L415 205 L415 215 Z" fill="#e63946"/>
+  <text x="400" y="285" font-family="sans-serif" font-size="14" fill="#444" text-anchor="middle">LRMA</text>
+</svg>

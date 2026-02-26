@@ -1,0 +1,1 @@
+<?php get_header(); wp_body_open(); ?>Site restoration in progress, please visit that website a bit later, thank you! :)

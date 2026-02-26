@@ -1,0 +1,1 @@
+<?php wp_head(); show_admin_bar(true);

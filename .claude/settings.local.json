@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(done)",
+      "WebFetch(domain:www.lrma.lv)",
+      "Bash(sudo -u www-data wp theme list 2>&1 && sudo -u www-data wp menu list 2>&1 && sudo -u www-data wp option get blogname 2>&1 && sudo -u www-data wp option get blogdescription 2>&1 && sudo -u www-data wp option get siteurl 2>&1)",
+      "Bash(php8.4 -m)",
+      "Bash(php -m)",
+      "Bash(sudo -u www-data wp plugin list --path=/var/www/html 2>/dev/null | head -30)",
+      "Bash(sudo -u www-data wp plugin list --path=/var/www/html --format=table 2>&1 | grep -v \"^$\")",
+      "Bash(sudo -u www-data wp cache flush 2>&1 && echo \"OK\")",
+      "Bash(php -l /var/www/html/wp-content/themes/lrma-rock/front-page.php && curl -s -o /dev/null -w \"%{http_code}\" http://localhost/ 2>&1)",
+      "Bash(curl -s http://localhost/ | grep -E \"\\(class=\\\\\"hero|class=\\\\\"news|class=\\\\\"footer|class=\\\\\"genre|class=\\\\\"radio|--red|--black|Anton|Bebas\\)\" | head -20)",
+      "Bash(php -l /var/www/html/wp-content/themes/lrma-rock/header.php && php -l /var/www/html/wp-content/themes/lrma-rock/functions.php && curl -s -o /dev/null -w \"%{http_code}\" http://localhost/ && echo \" OK\")",
+      "Bash(curl -s http://localhost/ | grep -o 'nav-radio[^\"]*' | head -20)",
+      "WebFetch(domain:rockradio.lv)",
+      "Bash(curl -s \"https://rockradio.lv\" 2>&1 | head -300)",
+      "Bash(curl -s \"https://rockradio.lv\" | grep -Eo '\\(https?://[^\"'\\\\''<>\\\\s]+\\\\.\\(mp3|aac|ogg|m3u8|pls|m3u\\)[^\"'\\\\''<>\\\\s]*\\)|\\(stream[^\"'\\\\''<>\\\\s]{0,60}\\)|\\(radioboss[^\"'\\\\''<>\\\\s]{0,80}\\)|\\(audio[^\"'\\\\''<>\\\\s]{0,80}\\)|\\(source[^\"'\\\\''<>\\\\s]{0,80}\\)'  | sort -u | head -40)",
+      "Bash(curl -s \"https://rockradio.lv\" | grep -o 'radioboss[^\"'\\\\''<> ]*' | sort -u)",
+      "Bash(curl -s \"https://rockradio.lv\" | grep -o 'audio[^>]*>' | head -10)",
+      "Bash(curl -s \"https://c22.radioboss.fm/w/nowplayinginfo?u=318\" | python3 -m json.tool 2>/dev/null || curl -s \"https://c22.radioboss.fm/w/nowplayinginfo?u=318\")",
+      "Bash(php -l /var/www/html/wp-content/themes/lrma-rock/header.php && curl -s -o /dev/null -w \"%{http_code}\" http://localhost/ && echo \" OK\")",
+      "Bash(curl -s http://localhost/ | grep -o 'c22\\\\.radioboss[^\"'\\\\'']*' | sort -u)",
+      "Bash(find /var/www/html/wp-content/themes/lrma-rock/assets/img/ -type f && find /var/www/html/wp-content/uploads/ -iname \"logo*\" 2>/dev/null | head -10)",
+      "Bash(php -l /var/www/html/wp-content/themes/lrma-rock/header.php && echo \"PHP syntax OK\")",
+      "Bash(sudo -u www-data wp menu list --format=table 2>/dev/null || echo \"WP-CLI unavailable\")",
+      "Bash(sudo -u www-data wp eval-file /tmp/lrma_menu_setup.php 2>&1)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/ 2>/dev/null || curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1/ 2>/dev/null)",
+      "Bash(ls -la /var/www/html/wp-content/mu-plugins/lrma-menu-setup.php && mysql -u root wordpress -e \"SELECT term_id, name, slug FROM wp_terms WHERE name LIKE '%Navigācija%' OR name LIKE '%navigacija%' OR name LIKE '%Menu%' OR name LIKE '%menu%' LIMIT 20;\" 2>/dev/null)"
+    ]
+  }
+}

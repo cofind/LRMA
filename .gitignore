@@ -1,0 +1,17 @@
+# Ignore configuration file with passwords (VERY IMPORTANT)
+wp-config.php
+
+# Ignore the uploads folder (too large for Git, back this up separately or use S3)
+wp-content/uploads/
+
+# Ignore cache, logs, and backups
+wp-content/cache/
+wp-content/backups/
+*.log
+*.sql
+*.gz
+*.zip
+
+# Ignore system files
+.DS_Store
+thumbs.db
