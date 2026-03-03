@@ -1,0 +1,158 @@
+{
+	"key": "group_lrma_featured_slides",
+	"title": "Featured Slides",
+	"fields": [
+		{
+			"key": "field_lrma_featured_slides",
+			"label": "Featured Slides",
+			"name": "featured_slides",
+			"type": "repeater",
+			"instructions": "Add, remove and reorder slides shown in the hero slider on the front page. Max 6 slides are shown total (including auto-pulled article slides).",
+			"required": 0,
+			"wrapper": {
+				"width": "",
+				"class": "",
+				"id": ""
+			},
+			"collapsed": "field_lrma_slide_title",
+			"min": 0,
+			"max": 6,
+			"layout": "block",
+			"button_label": "Add Slide",
+			"sub_fields": [
+				{
+					"key": "field_lrma_slide_active",
+					"label": "Active",
+					"name": "active",
+					"type": "true_false",
+					"instructions": "Uncheck to hide this slide without deleting it.",
+					"required": 0,
+					"default_value": 1,
+					"ui": 1,
+					"ui_on_text": "Visible",
+					"ui_off_text": "Hidden"
+				},
+				{
+					"key": "field_lrma_slide_position",
+					"label": "Position",
+					"name": "position",
+					"type": "number",
+					"instructions": "Slides with lower numbers appear first. Use 1 to pin to the front, 99 to place after all article slides.",
+					"required": 0,
+					"default_value": 99,
+					"min": 1,
+					"max": 99,
+					"step": 1,
+					"wrapper": {
+						"width": "25"
+					}
+				},
+				{
+					"key": "field_lrma_slide_image",
+					"label": "Image",
+					"name": "image",
+					"type": "image",
+					"instructions": "Recommended size: 1920\u00d7900px. Will be cropped to fill.",
+					"required": 1,
+					"return_format": "array",
+					"preview_size": "medium",
+					"library": "all",
+					"wrapper": {
+						"width": "75"
+					}
+				},
+				{
+					"key": "field_lrma_slide_cat_label",
+					"label": "Category Label",
+					"name": "cat_label",
+					"type": "text",
+					"instructions": "Short label shown in the coloured pill, e.g. \u201cKoncerts\u201d, \u201cAlbums\u201d.",
+					"required": 0,
+					"maxlength": 30,
+					"wrapper": {
+						"width": "50"
+					}
+				},
+				{
+					"key": "field_lrma_slide_accent_colour",
+					"label": "Accent Colour",
+					"name": "accent_colour",
+					"type": "select",
+					"instructions": "Colour used for the category pill and CTA button.",
+					"required": 0,
+					"choices": {
+						"red": "Red (default)",
+						"green": "Green",
+						"blue": "Blue"
+					},
+					"default_value": "red",
+					"allow_null": 0,
+					"multiple": 0,
+					"ui": 1,
+					"wrapper": {
+						"width": "50"
+					}
+				},
+				{
+					"key": "field_lrma_slide_title",
+					"label": "Title",
+					"name": "title",
+					"type": "text",
+					"instructions": "Main headline shown on the slide.",
+					"required": 1,
+					"maxlength": 80
+				},
+				{
+					"key": "field_lrma_slide_subtitle",
+					"label": "Subtitle / Meta",
+					"name": "subtitle",
+					"type": "text",
+					"instructions": "Secondary line, e.g. \u201c15.04.2026 \u00b7 Palladium, R\u012bga\u201d or \u201cBez reklām\u0101m\u201d.",
+					"required": 0
+				},
+				{
+					"key": "field_lrma_slide_cta_text",
+					"label": "CTA Label",
+					"name": "cta_text",
+					"type": "text",
+					"instructions": "Button label, e.g. \u201cUzzin\u0101t Vair\u0101k\u201d or \u201cPirkt Bi\u013cetes\u201d.",
+					"required": 0,
+					"default_value": "Uzzin\u0101t Vair\u0101k",
+					"maxlength": 40,
+					"wrapper": {
+						"width": "50"
+					}
+				},
+				{
+					"key": "field_lrma_slide_cta_url",
+					"label": "CTA URL",
+					"name": "cta_url",
+					"type": "url",
+					"instructions": "Where the button links to. Can be internal or external.",
+					"required": 0,
+					"wrapper": {
+						"width": "50"
+					}
+				}
+			]
+		}
+	],
+	"location": [
+		[
+			{
+				"param": "options_page",
+				"operator": "==",
+				"value": "acf-options-featured-slides"
+			}
+		]
+	],
+	"menu_order": 0,
+	"position": "normal",
+	"style": "default",
+	"label_placement": "top",
+	"instruction_placement": "label",
+	"hide_on_screen": "",
+	"active": true,
+	"description": "Promo slides for the front-page hero slider. Displayed mixed with auto-pulled article slides.",
+	"show_in_rest": 0
+}
