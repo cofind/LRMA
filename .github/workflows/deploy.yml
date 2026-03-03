@@ -21,7 +21,7 @@ jobs:
 
             echo "🚀 Deploying LRMA theme..."
 
-            cd /var/www/html/wp-content/themes/lrma-rock
+            cd /var/www/html
 
             # Pull latest code
             git fetch origin main
