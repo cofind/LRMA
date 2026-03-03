@@ -141,6 +141,18 @@ function lrma_customizer( $wp_customize ) {
     $wp_customize->add_setting( 'lrma_roka_nemieri_title', [ 'default' => 'Roka Nemieri (25.02.2026)', 'sanitize_callback' => 'sanitize_text_field' ] );
     $wp_customize->add_control( 'lrma_roka_nemieri_title', [ 'label' => 'Roka Nemieri — epizodes nosaukums', 'section' => 'lrma_options', 'type' => 'text' ] );
 
+    // Default OG image (1200×630 recommended)
+    $wp_customize->add_setting( 'og_default_image', [
+        'default'           => '',
+        'sanitize_callback' => 'esc_url_raw',
+    ] );
+    $wp_customize->add_control( 'og_default_image', [
+        'label'       => 'Default OG / Social Share Image URL (1200×630)',
+        'description' => 'Used when a post has no featured image. Paste a full URL.',
+        'section'     => 'lrma_options',
+        'type'        => 'url',
+    ] );
+
     // Logo height
     $wp_customize->add_setting( 'logo_height', [
         'default'           => 36,
@@ -299,3 +311,185 @@ function lrma_thumb( $size = 'lrma-card', $fallback = true ) {
     }
     return '';
 }
+
+// ─── Open Graph, Twitter Cards & JSON-LD ─────────────────────────────────────
+function lrma_social_meta() {
+    if ( is_admin() || is_feed() ) {
+        return;
+    }
+
+    $site_name   = get_bloginfo( 'name' );
+    $tagline     = get_bloginfo( 'description' );
+    $home_url    = home_url( '/' );
+    $default_img = get_theme_mod( 'og_default_image', '' );
+
+    // Locale — respect Polylang if installed; only use full locale (e.g. lv_LV, en_US)
+    $locale = 'lv_LV';
+    if ( function_exists( 'pll_current_language' ) ) {
+        $lang = pll_current_language( 'locale' );
+        if ( $lang && str_contains( $lang, '_' ) ) {
+            $locale = $lang;
+        }
+    }
+
+    // Twitter site handle parsed from Customizer URL (e.g. https://twitter.com/lrma_lv → @lrma_lv)
+    $twitter_handle = '';
+    $twitter_url    = get_theme_mod( 'social_twitter', '' );
+    if ( $twitter_url ) {
+        $path = trim( wp_parse_url( $twitter_url, PHP_URL_PATH ), '/' );
+        if ( $path ) {
+            $twitter_handle = '@' . $path;
+        }
+    }
+
+    // Per-context values
+    $type     = 'website';
+    $img_url  = $default_img;
+    $img_w    = 1200;
+    $img_h    = 630;
+    $pub_time = '';
+    $mod_time = '';
+    $section  = '';
+    $post     = null;
+    $author_name = '';
+    $author_url  = '';
+
+    if ( is_singular() ) {
+        $post    = get_queried_object();
+        $title   = wp_strip_all_tags( $post->post_title );
+        $excerpt = $post->post_excerpt
+            ?: wp_trim_words( wp_strip_all_tags( $post->post_content ), 30, '…' );
+        $desc    = $excerpt;
+        $url     = get_permalink( $post );
+        $type    = 'article';
+        $pub_time = get_the_date( 'c', $post );
+        $mod_time = get_the_modified_date( 'c', $post );
+
+        $cats = get_the_category( $post->ID );
+        if ( $cats ) {
+            $section = $cats[0]->name;
+        }
+
+        if ( has_post_thumbnail( $post->ID ) ) {
+            $src = wp_get_attachment_image_src( get_post_thumbnail_id( $post->ID ), 'lrma-hero' );
+            if ( $src ) {
+                [ $img_url, $img_w, $img_h ] = $src;
+            }
+        }
+        if ( ! $img_url ) {
+            $external = get_post_meta( $post->ID, 'lrma_hero_image', true );
+            if ( $external ) {
+                $img_url = $external;
+            }
+        }
+        if ( ! $img_url ) {
+            $img_url = $default_img;
+        }
+
+        $author_name = get_the_author_meta( 'display_name', $post->post_author );
+        $author_url  = get_author_posts_url( $post->post_author );
+
+    } elseif ( is_category() || is_tag() || is_tax() ) {
+        $term  = get_queried_object();
+        $title = $term->name . ' — ' . $site_name;
+        $desc  = $term->description ?: $tagline;
+        $url   = get_term_link( $term );
+
+    } elseif ( is_home() || is_front_page() ) {
+        $title = $site_name;
+        $desc  = $tagline;
+        $url   = $home_url;
+
+    } else {
+        $title = wp_get_document_title();
+        $desc  = $tagline;
+        $url   = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+    }
+
+    $title_esc = esc_attr( $title );
+    $desc_esc  = esc_attr( wp_strip_all_tags( $desc ) );
+    $url_esc   = esc_url( $url );
+
+    ?>
+<!-- Open Graph -->
+<meta property="og:site_name"   content="<?php echo esc_attr( $site_name ); ?>">
+<meta property="og:locale"      content="<?php echo esc_attr( $locale ); ?>">
+<meta property="og:type"        content="<?php echo esc_attr( $type ); ?>">
+<meta property="og:title"       content="<?php echo $title_esc; ?>">
+<meta property="og:description" content="<?php echo $desc_esc; ?>">
+<meta property="og:url"         content="<?php echo $url_esc; ?>">
+<?php if ( $img_url ) : ?>
+<meta property="og:image"        content="<?php echo esc_url( $img_url ); ?>">
+<meta property="og:image:width"  content="<?php echo esc_attr( $img_w ); ?>">
+<meta property="og:image:height" content="<?php echo esc_attr( $img_h ); ?>">
+<meta property="og:image:alt"    content="<?php echo $title_esc; ?>">
+<?php endif; ?>
+<?php if ( $type === 'article' ) : ?>
+<meta property="article:published_time" content="<?php echo esc_attr( $pub_time ); ?>">
+<meta property="article:modified_time"  content="<?php echo esc_attr( $mod_time ); ?>">
+<?php if ( $section ) : ?>
+<meta property="article:section" content="<?php echo esc_attr( $section ); ?>">
+<?php endif; ?>
+<?php endif; ?>
+<!-- Twitter Card -->
+<meta name="twitter:card"        content="summary_large_image">
+<?php if ( $twitter_handle ) : ?>
+<meta name="twitter:site"        content="<?php echo esc_attr( $twitter_handle ); ?>">
+<?php endif; ?>
+<meta name="twitter:title"       content="<?php echo $title_esc; ?>">
+<meta name="twitter:description" content="<?php echo $desc_esc; ?>">
+<?php if ( $img_url ) : ?>
+<meta name="twitter:image"       content="<?php echo esc_url( $img_url ); ?>">
+<meta name="twitter:image:alt"   content="<?php echo $title_esc; ?>">
+<?php endif; ?>
+<?php
+    // JSON-LD NewsArticle for single posts
+    if ( $post && is_singular( 'post' ) ) {
+        $logo_url = '';
+        $logo_id  = get_theme_mod( 'custom_logo' );
+        if ( $logo_id ) {
+            $logo_src = wp_get_attachment_image_src( $logo_id, 'full' );
+            if ( $logo_src ) {
+                $logo_url = $logo_src[0];
+            }
+        }
+
+        $schema = [
+            '@context'      => 'https://schema.org',
+            '@type'         => 'NewsArticle',
+            'headline'      => wp_strip_all_tags( $post->post_title ),
+            'description'   => wp_strip_all_tags( $desc ),
+            'url'           => get_permalink( $post ),
+            'datePublished' => $pub_time,
+            'dateModified'  => $mod_time,
+            'author'        => [
+                '@type' => 'Person',
+                'name'  => $author_name,
+                'url'   => $author_url,
+            ],
+            'publisher' => array_filter( [
+                '@type' => 'Organization',
+                'name'  => $site_name,
+                'url'   => $home_url,
+                'logo'  => $logo_url ? [
+                    '@type' => 'ImageObject',
+                    'url'   => $logo_url,
+                ] : null,
+            ] ),
+        ];
+
+        if ( $img_url ) {
+            $schema['image'] = [
+                '@type'  => 'ImageObject',
+                'url'    => $img_url,
+                'width'  => $img_w,
+                'height' => $img_h,
+            ];
+        }
+
+        echo '<script type="application/ld+json">'
+            . wp_json_encode( $schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT )
+            . '</script>' . "\n";
+    }
+}
+add_action( 'wp_head', 'lrma_social_meta', 5 );
