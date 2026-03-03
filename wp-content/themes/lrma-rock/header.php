@@ -95,22 +95,6 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
       ?>
     </nav>
 
-    <!-- LANGUAGE SWITCHER -->
-    <?php if ( function_exists( 'pll_the_languages' ) ) : ?>
-    <div class="lrma-lang-switch">
-      <?php
-      $pll_langs = pll_the_languages( [ 'raw' => 1 ] );
-      $pll_keys  = array_keys( $pll_langs );
-      foreach ( $pll_keys as $i => $slug ) {
-          $l   = $pll_langs[ $slug ];
-          $cls = 'lrma-lang-btn' . ( $l['current_lang'] ? ' current' : '' );
-          echo '<a href="' . esc_url( $l['url'] ) . '" class="' . esc_attr( $cls ) . '" hreflang="' . esc_attr( $l['slug'] ) . '">' . strtoupper( esc_html( $l['slug'] ) ) . '</a>';
-          if ( $i < count( $pll_keys ) - 1 ) echo '<span class="lrma-lang-sep">|</span>';
-      }
-      ?>
-    </div>
-    <?php endif; ?>
-
     <!-- RIGHT ACTIONS -->
     <div class="lrma-nav-actions">
       <button class="lrma-search-btn" aria-label="Meklēt"
@@ -133,6 +117,18 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
         </div>
         <span class="header-radio-track" id="headerRadioTrack">Rock Radio Latvia</span>
       </div>
+      <?php if ( function_exists( 'pll_the_languages' ) ) : ?>
+      <div class="lang-switcher" role="navigation" aria-label="Valodas izvēle">
+        <?php
+        $pll_langs = pll_the_languages( [ 'raw' => 1 ] );
+        foreach ( array_keys( $pll_langs ) as $slug ) {
+            $l   = $pll_langs[ $slug ];
+            $cls = $l['current_lang'] ? 'current-lang' : '';
+            echo '<a href="' . esc_url( $l['url'] ) . '" class="' . esc_attr( $cls ) . '" hreflang="' . esc_attr( $l['slug'] ) . '">' . strtoupper( esc_html( $l['slug'] ) ) . '</a>';
+        }
+        ?>
+      </div>
+      <?php endif; ?>
       <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>" class="lrma-cta">
         Iesniegt Mūziku
       </a>
@@ -196,15 +192,16 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
 
   <div class="mobile-menu-utils">
     <?php if ( function_exists( 'pll_the_languages' ) ) : ?>
+    <div class="mobile-lang-switcher">
       <?php
       $pll_m = pll_the_languages( [ 'raw' => 1 ] );
       foreach ( array_keys( $pll_m ) as $slug ) {
           $l   = $pll_m[ $slug ];
-          $cls = 'mobile-util-link mobile-lang-btn' . ( $l['current_lang'] ? ' current' : '' );
+          $cls = 'mobile-lang-btn' . ( $l['current_lang'] ? ' current-lang' : '' );
           echo '<a href="' . esc_url( $l['url'] ) . '" class="' . esc_attr( $cls ) . '" hreflang="' . esc_attr( $l['slug'] ) . '">' . strtoupper( esc_html( $l['slug'] ) ) . '</a>';
-          echo '<span class="mobile-util-sep">·</span>';
       }
       ?>
+    </div>
     <?php endif; ?>
     <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>"
        class="mobile-util-link">
