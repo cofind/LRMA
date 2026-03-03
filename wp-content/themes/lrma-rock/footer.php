@@ -1,3 +1,5 @@
+</main>
+
 <footer class="site-footer">
     <div class="footer-top">
 
@@ -79,27 +81,57 @@
         document.querySelectorAll('.reveal').forEach(function(el) { el.classList.add('revealed'); });
     }
 
-    // Radio play toggle
-    window.lrmaTogglePlay = function(btn) {
-        var playing = btn.getAttribute('data-playing') === '1';
-        btn.setAttribute('data-playing', playing ? '0' : '1');
-        btn.innerHTML = playing
-            ? '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white"/></svg>'
-            : '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="white"/><rect x="14" y="4" width="4" height="16" fill="white"/></svg>';
+    // Radio play toggle (front-page player)
+    var audio   = document.getElementById('radioAudio');
+    var playBtn = document.getElementById('playBtn');
+
+    function syncPlayBtn(playing) {
+        if (!playBtn) return;
+        playBtn.setAttribute('data-playing', playing ? '1' : '0');
+        playBtn.innerHTML = playing
+            ? '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" fill="white"/><rect x="14" y="4" width="4" height="16" fill="white"/></svg>'
+            : '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="white"/></svg>';
+    }
+
+    if (audio) {
+        audio.addEventListener('play',  function() { syncPlayBtn(true);  });
+        audio.addEventListener('pause', function() { syncPlayBtn(false); });
+        audio.addEventListener('ended', function() { syncPlayBtn(false); });
+        audio.addEventListener('error', function() {
+            if (!playBtn) return;
+            var err = document.createElement('span');
+            err.textContent = 'Straume nav pieejama';
+            err.style.cssText = 'display:block;font-size:11px;color:#cc2222;margin-top:6px;';
+            var ctrl = playBtn.parentNode;
+            ctrl.appendChild(err);
+            setTimeout(function() { if (err.parentNode) err.parentNode.removeChild(err); }, 4000);
+        });
+    }
+
+    window.lrmaTogglePlay = function() {
+        if (!audio) return;
+        if (audio.paused) { audio.play().catch(function() {}); }
+        else              { audio.pause(); }
     };
 
-    // Volume slider drag
+    // Volume slider drag — wired to audio.volume
     var track = document.getElementById('volTrack');
     var fill  = document.getElementById('volFill');
     var thumb = document.getElementById('volThumb');
     if (track && fill && thumb) {
+        // Default volume 80%
+        if (audio) { audio.volume = 0.8; }
+        fill.style.width = '80%';
+        thumb.style.left = '80%';
+
         var dragging = false;
         function setVol(e) {
             var rect = track.getBoundingClientRect();
             var pct  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
             var p    = (pct * 100).toFixed(1) + '%';
-            fill.style.width  = p;
-            thumb.style.left  = p;
+            fill.style.width = p;
+            thumb.style.left = p;
+            if (audio) { audio.volume = pct; }
         }
         track.addEventListener('mousedown', function(e) { dragging = true; setVol(e); });
         document.addEventListener('mousemove', function(e) { if (dragging) setVol(e); });

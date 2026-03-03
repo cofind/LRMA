@@ -26,7 +26,24 @@
       "Bash(sudo -u www-data wp menu list --format=table 2>/dev/null || echo \"WP-CLI unavailable\")",
       "Bash(sudo -u www-data wp eval-file /tmp/lrma_menu_setup.php 2>&1)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost/ 2>/dev/null || curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1/ 2>/dev/null)",
-      "Bash(ls -la /var/www/html/wp-content/mu-plugins/lrma-menu-setup.php && mysql -u root wordpress -e \"SELECT term_id, name, slug FROM wp_terms WHERE name LIKE '%Navigācija%' OR name LIKE '%navigacija%' OR name LIKE '%Menu%' OR name LIKE '%menu%' LIMIT 20;\" 2>/dev/null)"
+      "Bash(ls -la /var/www/html/wp-content/mu-plugins/lrma-menu-setup.php && mysql -u root wordpress -e \"SELECT term_id, name, slug FROM wp_terms WHERE name LIKE '%Navigācija%' OR name LIKE '%navigacija%' OR name LIKE '%Menu%' OR name LIKE '%menu%' LIMIT 20;\" 2>/dev/null)",
+      "Bash(sudo -u www-data wp db query \"SELECT * FROM wp_postmeta WHERE post_id=996;\" 2>/dev/null)",
+      "Bash(sudo -u www-data wp db query \"SELECT ID, post_title, guid FROM wp_posts WHERE ID=918;\" 2>/dev/null)",
+      "Bash(sudo -u www-data wp db query \"SELECT option_value FROM wp_options WHERE option_name='theme_mods_lrma-rock';\" 2>/dev/null)",
+      "Bash(sudo -u www-data wp db query \"UPDATE wp_options SET option_value='a:3:{s:18:\\\\\"custom_css_post_id\\\\\";i:-1;s:11:\\\\\"custom_logo\\\\\";i:996;s:18:\\\\\"nav_menu_locations\\\\\";a:1:{s:7:\\\\\"primary\\\\\";i:18;}}' WHERE option_name='theme_mods_lrma-rock';\" 2>/dev/null && echo \"OK\")",
+      "Bash(sudo -u www-data wp db query \"UPDATE wp_options SET option_value='996' WHERE option_name='site_logo';\" 2>/dev/null && echo \"OK\")",
+      "Bash(sudo -u www-data wp db query \"SELECT option_value FROM wp_options WHERE option_name='theme_mods_lrma-rock';\" 2>/dev/null && sudo -u www-data wp db query \"SELECT option_name, option_value FROM wp_options WHERE option_name IN \\('site_logo','custom_logo'\\);\" 2>/dev/null)",
+      "mcp__plugin_linear_linear__list_teams",
+      "Bash(sudo -u www-data wp db query \"SELECT ID, post_title, guid FROM wp_posts WHERE ID IN \\(996, 999\\) AND post_type='attachment';\" 2>/dev/null)",
+      "mcp__plugin_linear_linear__get_issue",
+      "mcp__claude_ai_Linear__save_issue",
+      "mcp__claude_ai_Linear__get_issue",
+      "Bash(sudo -u www-data wp menu list 2>&1)",
+      "WebSearch",
+      "WebFetch(domain:en.concerts-metal.com)",
+      "Bash(sudo -u www-data wp eval 'print_r\\(pll_languages_list\\([\"fields\" => \"\"]\\)\\);' 2>&1)",
+      "Bash(sudo -u www-data wp cache flush 2>&1)",
+      "Bash(sudo -u www-data wp db query \"SELECT COUNT\\(*\\) as total FROM wp_posts WHERE post_type='post' AND post_status='publish';\" 2>&1)"
     ]
   }
 }

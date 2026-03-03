@@ -46,11 +46,7 @@ if ( empty( $logo_url ) ) {
     wp_reset_postdata();
 }
 
-// Dark-logo detection (invert if filename contains 'black' or 'dark')
 $logo_classes = 'lrma-logo-img';
-if ( ! empty( $logo_url ) && ( strpos( $logo_url, 'black' ) !== false || strpos( $logo_url, 'dark' ) !== false ) ) {
-    $logo_classes .= ' dark-logo';
-}
 
 /* ── Radio config ────────────────────────────────────────────────── */
 $stream_url = esc_url_raw( get_theme_mod( 'radio_stream_url', 'https://c22.radioboss.fm/stream/318' ) );
@@ -70,35 +66,7 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
 
 <header id="lrma-header">
 
-  <!-- ── ROW 1: RED TOPBAR ─────────────────────────────────────── -->
-  <div class="lrma-topbar">
-    <div class="topbar-ticker-wrap">
-      <div class="topbar-ticker">
-        <?php
-        $ticker_posts = new WP_Query( [ 'posts_per_page' => 6, 'post_status' => 'publish' ] );
-        $ticker_items = [];
-        if ( $ticker_posts->have_posts() ) {
-            while ( $ticker_posts->have_posts() ) {
-                $ticker_posts->the_post();
-                $ticker_items[] = '<a href="' . esc_url( get_permalink() ) . '" class="topbar-item"><span class="topbar-dot"></span>' . esc_html( get_the_title() ) . '</a>';
-            }
-            wp_reset_postdata();
-        }
-        $all_items = array_merge( $ticker_items, $ticker_items );
-        echo implode( '', $all_items );
-        ?>
-      </div>
-    </div>
-    <div class="topbar-right">
-      <a href="<?php echo esc_url( home_url( '/en/' ) ); ?>" class="topbar-link">EN</a>
-      <span class="topbar-sep">·</span>
-      <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>" class="topbar-link">
-        <?php echo esc_html( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>
-      </a>
-    </div>
-  </div>
-
-  <!-- ── ROW 2: MAIN NAV ───────────────────────────────────────── -->
+  <!-- ── MAIN NAV ──────────────────────────────────────────────── -->
   <div class="lrma-mainrow">
 
     <!-- LOGO -->
@@ -106,8 +74,7 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
       <?php if ( ! empty( $logo_url ) ) : ?>
         <img src="<?php echo esc_url( $logo_url ); ?>"
              alt="<?php bloginfo( 'name' ); ?>"
-             class="<?php echo esc_attr( $logo_classes ); ?>"
-             width="120" height="40">
+             class="<?php echo esc_attr( $logo_classes ); ?>">
       <?php else : ?>
         <span class="lrma-logo-text">LR<em>M</em>A</span>
       <?php endif; ?>
@@ -128,6 +95,22 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
       ?>
     </nav>
 
+    <!-- LANGUAGE SWITCHER -->
+    <?php if ( function_exists( 'pll_the_languages' ) ) : ?>
+    <div class="lrma-lang-switch">
+      <?php
+      $pll_langs = pll_the_languages( [ 'raw' => 1 ] );
+      $pll_keys  = array_keys( $pll_langs );
+      foreach ( $pll_keys as $i => $slug ) {
+          $l   = $pll_langs[ $slug ];
+          $cls = 'lrma-lang-btn' . ( $l['current_lang'] ? ' current' : '' );
+          echo '<a href="' . esc_url( $l['url'] ) . '" class="' . esc_attr( $cls ) . '" hreflang="' . esc_attr( $l['slug'] ) . '">' . strtoupper( esc_html( $l['slug'] ) ) . '</a>';
+          if ( $i < count( $pll_keys ) - 1 ) echo '<span class="lrma-lang-sep">|</span>';
+      }
+      ?>
+    </div>
+    <?php endif; ?>
+
     <!-- RIGHT ACTIONS -->
     <div class="lrma-nav-actions">
       <button class="lrma-search-btn" aria-label="Meklēt"
@@ -136,14 +119,28 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
       </button>
+      <div class="header-radio-pill">
+        <button class="header-radio-btn" id="headerPlayBtn" aria-label="Atskaņot radio">
+          <svg class="radio-play-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <svg class="radio-pause-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+            <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+          </svg>
+        </button>
+        <div class="header-radio-wave">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <span class="header-radio-track" id="headerRadioTrack">Rock Radio Latvia</span>
+      </div>
       <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>" class="lrma-cta">
         Iesniegt Mūziku
       </a>
     </div>
 
     <!-- MOBILE BURGER -->
-    <button class="lrma-burger" aria-label="Atvērt izvēlni"
-            onclick="document.getElementById('lrma-mobile-nav').classList.toggle('open');this.classList.toggle('active')">
+    <button class="lrma-burger" id="mobileMenuBurger"
+            aria-label="Atvērt izvēlni" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
 
@@ -167,44 +164,171 @@ $meta_url   = esc_url_raw( get_theme_mod( 'radio_meta_url',   'https://c22.radio
             aria-label="Aizvērt">✕</button>
   </div>
 
-  <!-- ── MOBILE NAV OVERLAY ─────────────────────────────────────── -->
-  <div id="lrma-mobile-nav" class="lrma-mobile-nav">
-    <?php
-    wp_nav_menu( [
-      'theme_location'  => 'primary',
-      'menu_class'      => 'lrma-mobile-menu',
-      'container'       => false,
-      'depth'           => 1,
-      'fallback_cb'     => false,
-    ] );
-    ?>
-    <div class="mobile-nav-tagline">
-      LRMA mērķis ir radīt, uzturēt un popularizēt ilgtspējīgu un starptautiski atzītu kultūras vidi Latvijā, popularizējot Latvijas rokmūziku.
-    </div>
-  </div>
 
 </header>
 
-<?php if ( is_front_page() || is_home() ) : ?>
-<div class="lrma-tagline-bar">
-  <em>LRMA</em> — LRMA mērķis ir radīt, uzturēt un popularizēt ilgtspējīgu un starptautiski atzītu kultūras vidi Latvijā, popularizējot Latvijas rokmūziku.
+<!-- ── AUDIO SINGLETON (shared by all players) ────────────────────── -->
+<audio id="radioAudio" preload="none"
+       src="<?php echo esc_url( $stream_url ); ?>"></audio>
+
+<!-- ── FULL-SCREEN MOBILE MENU ────────────────────────────────────── -->
+<div id="mobileMenu" role="dialog" aria-modal="true"
+     aria-label="Navigācija" aria-hidden="true">
+
+  <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Aizvērt izvēlni">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </svg>
+  </button>
+
+  <nav class="mobile-menu-nav" aria-label="Galvenā navigācija">
+    <?php
+    wp_nav_menu( [
+      'theme_location' => 'primary',
+      'menu_class'     => 'mobile-menu-list',
+      'container'      => false,
+      'depth'          => 1,
+      'fallback_cb'    => false,
+    ] );
+    ?>
+  </nav>
+
+  <div class="mobile-menu-utils">
+    <?php if ( function_exists( 'pll_the_languages' ) ) : ?>
+      <?php
+      $pll_m = pll_the_languages( [ 'raw' => 1 ] );
+      foreach ( array_keys( $pll_m ) as $slug ) {
+          $l   = $pll_m[ $slug ];
+          $cls = 'mobile-util-link mobile-lang-btn' . ( $l['current_lang'] ? ' current' : '' );
+          echo '<a href="' . esc_url( $l['url'] ) . '" class="' . esc_attr( $cls ) . '" hreflang="' . esc_attr( $l['slug'] ) . '">' . strtoupper( esc_html( $l['slug'] ) ) . '</a>';
+          echo '<span class="mobile-util-sep">·</span>';
+      }
+      ?>
+    <?php endif; ?>
+    <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>"
+       class="mobile-util-link">
+      <?php echo esc_html( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>
+    </a>
+  </div>
+
+  <div class="mobile-radio-player">
+    <button class="mobile-radio-btn" id="mobileRadioBtn" aria-label="Atskaņot radio">
+      <span class="radio-live-dot"></span>
+      <svg class="radio-play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      <svg class="radio-pause-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>
+      </svg>
+    </button>
+    <div class="mobile-radio-info">
+      <span class="mobile-radio-label">LIVE · ROCK RADIO</span>
+      <span class="mobile-radio-track" id="mobileRadioTrack">Rock Radio Latvia</span>
+    </div>
+  </div>
+
 </div>
-<?php endif; ?>
 
 <script>
 (function () {
-  var header  = document.getElementById('lrma-header');
-  var THRESHOLD = 10;
-
+  /* ── Scroll: frosted-glass header ─────────────────────────────── */
+  var header = document.getElementById('lrma-header');
   function onScroll() {
-    if (window.scrollY > THRESHOLD) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
+    header.classList.toggle('scrolled', window.scrollY > 10);
   }
-
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
+
+  /* ── Mobile menu ───────────────────────────────────────────────── */
+  var menu    = document.getElementById('mobileMenu');
+  var burger  = document.getElementById('mobileMenuBurger');
+  var closeBtn = document.getElementById('mobileMenuClose');
+
+  function openMenu() {
+    menu.classList.add('open');
+    burger.classList.add('active');
+    burger.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    burger.classList.remove('active');
+    burger.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    burger.focus();
+  }
+
+  burger.addEventListener('click', function () {
+    menu.classList.contains('open') ? closeMenu() : openMenu();
+  });
+  closeBtn.addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu();
+  });
+  menu.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', closeMenu);
+  });
+
+  /* ── Radio mini-player (shared) ───────────────────────────────── */
+  var audio         = document.getElementById('radioAudio');
+  var mobileBtn     = document.getElementById('mobileRadioBtn');
+  var trackEl       = document.getElementById('mobileRadioTrack');
+  var playIcon      = mobileBtn.querySelector('.radio-play-icon');
+  var pauseIcon     = mobileBtn.querySelector('.radio-pause-icon');
+  var headerBtn     = document.getElementById('headerPlayBtn');
+  var headerTrackEl = document.getElementById('headerRadioTrack');
+  var headerPill    = document.querySelector('.header-radio-pill');
+  var hPlayIcon     = headerBtn ? headerBtn.querySelector('.radio-play-icon')  : null;
+  var hPauseIcon    = headerBtn ? headerBtn.querySelector('.radio-pause-icon') : null;
+
+  function syncRadioUI() {
+    var playing = !audio.paused;
+    playIcon.style.display  = playing ? 'none' : '';
+    pauseIcon.style.display = playing ? '' : 'none';
+    mobileBtn.setAttribute('aria-label', playing ? 'Apturēt radio' : 'Atskaņot radio');
+    mobileBtn.classList.toggle('playing', playing);
+    if (hPlayIcon)  hPlayIcon.style.display  = playing ? 'none' : '';
+    if (hPauseIcon) hPauseIcon.style.display = playing ? '' : 'none';
+    if (headerBtn)  headerBtn.setAttribute('aria-label', playing ? 'Apturēt radio' : 'Atskaņot radio');
+    if (headerBtn)  headerBtn.classList.toggle('playing', playing);
+    if (headerPill) headerPill.classList.toggle('playing', playing);
+  }
+  audio.addEventListener('play',  syncRadioUI);
+  audio.addEventListener('pause', syncRadioUI);
+  audio.addEventListener('ended', syncRadioUI);
+  syncRadioUI();
+
+  mobileBtn.addEventListener('click', function () {
+    if (audio.paused) { audio.play().catch(function () {}); }
+    else              { audio.pause(); }
+  });
+  if (headerBtn) {
+    headerBtn.addEventListener('click', function () {
+      if (audio.paused) { audio.play().catch(function () {}); }
+      else              { audio.pause(); }
+    });
+  }
+
+  /* Track metadata polling */
+  var META_URL = '<?php echo esc_js( $meta_url ); ?>';
+  function fetchTrack() {
+    if (!META_URL) return;
+    fetch(META_URL)
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var t = d && (d.nowplaying || d.currenttrack || d.autodj_title || d.track || d.title) || '';
+        if (t && trackEl)       trackEl.textContent       = t;
+        if (t && headerTrackEl) headerTrackEl.textContent = t;
+      })
+      .catch(function () {});
+  }
+  fetchTrack();
+  setInterval(fetchTrack, 30000);
 })();
 </script>
+
+<main id="lrma-main">
