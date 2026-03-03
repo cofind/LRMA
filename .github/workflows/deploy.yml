@@ -39,7 +39,7 @@ jobs:
             sudo systemctl reload php8.0-fpm 2>/dev/null || true
 
             # Flush WordPress rewrite rules
-            wp rewrite flush --hard --path=/var/www/html/
+            wp rewrite flush --allow-root --hard --path=/var/www/html/
 
             # Verify site is up
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://207.154.226.128/)
