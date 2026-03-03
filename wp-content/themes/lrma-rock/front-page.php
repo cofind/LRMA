@@ -59,70 +59,121 @@ body::after {
 </div>
 
 <!-- ╔══════════════════════════════════════╗
-     ║  NEWS GRID                          ║
+     ║  EDITORIAL ARTICLE GRID             ║
      ╚══════════════════════════════════════╝ -->
-<section id="jaunumi" class="news-section">
-    <div class="section-label">Jaunumi</div>
-    <h2 class="section-title">Jaunākie Raksti</h2>
+<?php
+// Filter tabs
+$filter_tabs = [
+    0  => 'Visi',
+    8  => 'Jaunumi',
+    10 => 'Recenzijas',
+    9  => 'Intervijas',
+    12 => 'Festivāli',
+];
+$active_cat = isset( $_GET['cat'] ) ? (int) $_GET['cat'] : 0;
+if ( ! array_key_exists( $active_cat, $filter_tabs ) ) {
+    $active_cat = 0;
+}
 
-    <?php
-    $featured   = new WP_Query( [ 'posts_per_page' => 1, 'post_status' => 'publish' ] );
-    $secondary  = new WP_Query( [ 'posts_per_page' => 3, 'offset' => 1, 'post_status' => 'publish' ] );
-    $more_posts = new WP_Query( [ 'posts_per_page' => 4, 'offset' => 4, 'post_status' => 'publish' ] );
-    ?>
+// Grid query — 5 posts (1 featured + 4 secondary)
+$grid_args = [ 'posts_per_page' => 5, 'post_status' => 'publish' ];
+if ( $active_cat > 0 ) $grid_args['cat'] = $active_cat;
+$grid_query = new WP_Query( $grid_args );
+$grid_posts = $grid_query->posts;
+wp_reset_postdata();
 
-    <div class="news-grid reveal">
+// "Visi Raksti" link — Jaunumi category archive
+$jaunumi_term = get_category_by_slug( 'jaunumi' );
+$jaunumi_link = $jaunumi_term ? get_category_link( $jaunumi_term->term_id ) : home_url( '/category/jaunumi/' );
+?>
+<section id="jaunumi" class="editorial-section">
 
-        <?php if ( $featured->have_posts() ) : while ( $featured->have_posts() ) : $featured->the_post(); ?>
-        <a href="<?php the_permalink(); ?>" class="news-card featured">
-            <?php if ( has_post_thumbnail() ) : ?>
-                <?php the_post_thumbnail( 'large', [ 'class' => 'card-image' ] ); ?>
-            <?php endif; ?>
-            <div class="card-tag">
-                <?php $cats = get_the_category(); if ( $cats ) echo esc_html( $cats[0]->name ); ?>
-            </div>
-            <h3 class="card-title featured-title"><?php the_title(); ?></h3>
-            <p class="card-excerpt"><?php echo wp_trim_words( get_the_excerpt(), 28, '…' ); ?></p>
-            <div class="card-meta">
-                <?php echo get_the_date( 'd.m.Y' ); ?> · <?php echo max( 1, ceil( str_word_count( get_the_content() ) / 200 ) ); ?> min
-            </div>
+    <!-- Category filter tabs -->
+    <div class="cat-filter-tabs">
+        <?php foreach ( $filter_tabs as $cat_id => $label ) :
+            $is_active = ( $cat_id === $active_cat );
+            $tab_url   = $cat_id > 0
+                ? esc_url( add_query_arg( 'cat', $cat_id, home_url( '/' ) ) )
+                : esc_url( home_url( '/' ) );
+        ?>
+        <a href="<?php echo $tab_url; ?>"
+           class="cat-tab<?php echo $is_active ? ' is-active' : ''; ?>"
+           <?php echo $is_active ? 'aria-current="true"' : ''; ?>>
+            <?php echo esc_html( $label ); ?>
         </a>
-        <?php endwhile; wp_reset_postdata(); endif; ?>
+        <?php endforeach; ?>
+    </div>
 
-        <?php if ( $secondary->have_posts() ) : while ( $secondary->have_posts() ) : $secondary->the_post();
-        $is_first = ( $secondary->current_post === 0 ); ?>
-        <a href="<?php the_permalink(); ?>" class="news-card<?php echo $is_first ? ' wide' : ''; ?>">
-            <?php if ( ! $is_first && has_post_thumbnail() ) : ?>
-                <?php the_post_thumbnail( 'medium', [ 'class' => 'card-image card-image-small' ] ); ?>
-            <?php endif; ?>
-            <div class="card-tag">
-                <?php $cats = get_the_category(); if ( $cats ) echo esc_html( $cats[0]->name ); ?>
-            </div>
-            <h3 class="card-title"><?php the_title(); ?></h3>
-            <div class="card-meta"><?php echo get_the_date( 'd.m.Y' ); ?></div>
-        </a>
-        <?php endwhile; wp_reset_postdata(); endif; ?>
-
-    </div><!-- .news-grid -->
-
-    <div class="more-grid reveal">
-        <?php if ( $more_posts->have_posts() ) : while ( $more_posts->have_posts() ) : $more_posts->the_post(); ?>
-        <a href="<?php the_permalink(); ?>" class="news-card">
-            <div class="card-tag">
-                <?php $cats = get_the_category(); if ( $cats ) echo esc_html( $cats[0]->name ); ?>
-            </div>
-            <h3 class="card-title"><?php the_title(); ?></h3>
-            <div class="card-meta"><?php echo get_the_date( 'd.m.Y' ); ?></div>
-        </a>
-        <?php endwhile; wp_reset_postdata(); endif; ?>
-    </div><!-- .more-grid -->
+    <!-- Editorial grid: 1 large + 4 medium -->
+    <?php if ( ! empty( $grid_posts ) ) : ?>
+    <div class="editorial-grid reveal">
+        <?php foreach ( $grid_posts as $i => $gpost ) :
+            get_template_part( 'template-parts/card-article', null, [
+                'post'    => $gpost,
+                'variant' => ( $i === 0 ) ? 'large' : 'medium',
+            ] );
+        endforeach; ?>
+    </div>
+    <?php endif; ?>
 
     <div class="section-footer">
-        <?php $posts_page = get_permalink( get_option( 'page_for_posts' ) ); ?>
-        <a href="<?php echo $posts_page ? esc_url( $posts_page ) : esc_url( home_url( '/jaunumi/' ) ); ?>" class="btn btn-outline">Visi Raksti &nbsp;→</a>
+        <a href="<?php echo esc_url( $jaunumi_link ); ?>" class="btn btn-outline">Visi Raksti &nbsp;→</a>
     </div>
 
 </section>
+
+<!-- ╔══════════════════════════════════════╗
+     ║  JUMS VARĒTU PATIKT STRIP           ║
+     ╚══════════════════════════════════════╝ -->
+<?php
+$shown_ids   = array_column( $grid_posts, 'ID' );
+$strip_query = new WP_Query( [
+    'posts_per_page' => 6,
+    'post_status'    => 'publish',
+    'post__not_in'   => $shown_ids ?: [ 0 ],
+] );
+$strip_posts = $strip_query->posts;
+wp_reset_postdata();
+?>
+<?php if ( ! empty( $strip_posts ) ) : ?>
+<section class="more-strip-section">
+
+    <div class="more-strip-header">
+        <div class="section-label">Jums Varētu Patikt</div>
+        <a href="<?php echo esc_url( $jaunumi_link ); ?>" class="section-all-link">Visi Raksti &nbsp;→</a>
+    </div>
+
+    <div class="more-strip-wrap">
+        <button class="strip-arrow strip-prev" aria-label="Iepriekšējais">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+        </button>
+        <div class="more-strip" id="moreStrip">
+            <?php foreach ( $strip_posts as $spost ) :
+                get_template_part( 'template-parts/card-article', null, [
+                    'post'    => $spost,
+                    'variant' => 'small',
+                ] );
+            endforeach; ?>
+        </div>
+        <button class="strip-arrow strip-next" aria-label="Nākamais">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9,6 15,12 9,18"/></svg>
+        </button>
+    </div>
+
+    <script>
+    (function () {
+        var strip = document.getElementById('moreStrip');
+        if (!strip) return;
+        var cardW = 232;
+        var prev  = strip.parentElement.querySelector('.strip-prev');
+        var next  = strip.parentElement.querySelector('.strip-next');
+        if (prev) prev.addEventListener('click', function () { strip.scrollBy({ left: -cardW * 2, behavior: 'smooth' }); });
+        if (next) next.addEventListener('click', function () { strip.scrollBy({ left:  cardW * 2, behavior: 'smooth' }); });
+    }());
+    </script>
+
+</section>
+<?php endif; ?>
 
 <!-- ╔══════════════════════════════════════╗
      ║  INTERVIEWS                         ║
