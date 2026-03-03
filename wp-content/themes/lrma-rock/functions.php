@@ -125,6 +125,22 @@ function lrma_customizer( $wp_customize ) {
         ] );
     }
 
+    // Mixcloud — Platais Vakars
+    $wp_customize->add_setting( 'lrma_platais_vakars_url', [ 'default' => 'https://www.mixcloud.com/LRMA/platais-vakars-p%C4%81vels-rutkovskis-2-da%C4%BCa-12012026/', 'sanitize_callback' => 'esc_url_raw' ] );
+    $wp_customize->add_control( 'lrma_platais_vakars_url', [ 'label' => 'Platais Vakars — jaunākais epizodes URL (Mixcloud)', 'section' => 'lrma_options', 'type' => 'url' ] );
+    $wp_customize->add_setting( 'lrma_platais_vakars_thumb', [ 'default' => 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/e/5/e/8/27f5-f168-4b00-882d-9d4f19ccfadb', 'sanitize_callback' => 'esc_url_raw' ] );
+    $wp_customize->add_control( 'lrma_platais_vakars_thumb', [ 'label' => 'Platais Vakars — thumbnail URL', 'section' => 'lrma_options', 'type' => 'url' ] );
+    $wp_customize->add_setting( 'lrma_platais_vakars_title', [ 'default' => 'PLATAIS VAKARS Pāvels Rutkovskis 2. daļa', 'sanitize_callback' => 'sanitize_text_field' ] );
+    $wp_customize->add_control( 'lrma_platais_vakars_title', [ 'label' => 'Platais Vakars — epizodes nosaukums', 'section' => 'lrma_options', 'type' => 'text' ] );
+
+    // Mixcloud — Roka Nemieri
+    $wp_customize->add_setting( 'lrma_roka_nemieri_url', [ 'default' => 'https://www.mixcloud.com/radioswhrock/roka-nemieri-25022026/', 'sanitize_callback' => 'esc_url_raw' ] );
+    $wp_customize->add_control( 'lrma_roka_nemieri_url', [ 'label' => 'Roka Nemieri — jaunākais epizodes URL (Mixcloud)', 'section' => 'lrma_options', 'type' => 'url' ] );
+    $wp_customize->add_setting( 'lrma_roka_nemieri_thumb', [ 'default' => 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/7/3/b/c/f2b2-affb-45c7-9fa6-09035c0ea5d6', 'sanitize_callback' => 'esc_url_raw' ] );
+    $wp_customize->add_control( 'lrma_roka_nemieri_thumb', [ 'label' => 'Roka Nemieri — thumbnail URL', 'section' => 'lrma_options', 'type' => 'url' ] );
+    $wp_customize->add_setting( 'lrma_roka_nemieri_title', [ 'default' => 'Roka Nemieri (25.02.2026)', 'sanitize_callback' => 'sanitize_text_field' ] );
+    $wp_customize->add_control( 'lrma_roka_nemieri_title', [ 'label' => 'Roka Nemieri — epizodes nosaukums', 'section' => 'lrma_options', 'type' => 'text' ] );
+
     // Logo height
     $wp_customize->add_setting( 'logo_height', [
         'default'           => 36,
