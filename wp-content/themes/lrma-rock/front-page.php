@@ -208,7 +208,6 @@ if ( $interviews->have_posts() ) : $interviews->the_post();
         <div class="interview-card__body">
             <div class="interview-card__kicker">
                 <span class="card-tag">Intervija</span>
-                <span class="interview-card__num">— 01</span>
             </div>
             <h3 class="interview-card__title"><?php the_title(); ?></h3>
             <p class="interview-card__excerpt"><?php echo wp_trim_words( get_the_excerpt(), 28, '…' ); ?></p>
@@ -262,20 +261,22 @@ function lrma_mc_latest( string $username, array $fallback ): array {
     return $result;
 }
 
+$pv_fallback_url = get_theme_mod( 'lrma_platais_vakars_url', 'https://www.mixcloud.com/LRMA/platais-vakars-p%C4%81vels-rutkovskis-2-da%C4%BCa-12012026/' );
 $pv = lrma_mc_latest( 'LRMA', [
-    'url'   => 'https://www.mixcloud.com/LRMA/platais-vakars-p%C4%81vels-rutkovskis-2-da%C4%BCa-12012026/',
-    'key'   => '/LRMA/platais-vakars-p%C4%81vels-rutkovskis-2-da%C4%BCa-12012026/',
-    'name'  => 'Pāvels Rutkovskis — 2. Daļa',
-    'thumb' => 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/e/5/e/8/27f5-f168-4b00-882d-9d4f19ccfadb',
-    'date'  => '12.01.2026',
+    'url'   => $pv_fallback_url,
+    'key'   => wp_parse_url( $pv_fallback_url, PHP_URL_PATH ) ?: '/LRMA/',
+    'name'  => get_theme_mod( 'lrma_platais_vakars_title', 'PLATAIS VAKARS Pāvels Rutkovskis 2. daļa' ),
+    'thumb' => get_theme_mod( 'lrma_platais_vakars_thumb', 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/e/5/e/8/27f5-f168-4b00-882d-9d4f19ccfadb' ),
+    'date'  => '',
 ] );
 
+$rn_fallback_url = get_theme_mod( 'lrma_roka_nemieri_url', 'https://www.mixcloud.com/radioswhrock/roka-nemieri-25022026/' );
 $rn = lrma_mc_latest( 'radioswhrock', [
-    'url'   => 'https://www.mixcloud.com/radioswhrock/roka-nemieri-25022026/',
-    'key'   => '/radioswhrock/roka-nemieri-25022026/',
-    'name'  => 'Roka Nemieri (25.02.2026)',
-    'thumb' => 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/7/3/b/c/f2b2-affb-45c7-9fa6-09035c0ea5d6',
-    'date'  => '25.02.2026',
+    'url'   => $rn_fallback_url,
+    'key'   => wp_parse_url( $rn_fallback_url, PHP_URL_PATH ) ?: '/radioswhrock/',
+    'name'  => get_theme_mod( 'lrma_roka_nemieri_title', 'Roka Nemieri (25.02.2026)' ),
+    'thumb' => get_theme_mod( 'lrma_roka_nemieri_thumb', 'https://thumbnailer.mixcloud.com/unsafe/600x600/extaudio/7/3/b/c/f2b2-affb-45c7-9fa6-09035c0ea5d6' ),
+    'date'  => '',
 ] );
 
 // Build widget iframe src from the cloudcast key.
@@ -285,89 +286,79 @@ function lrma_mc_widget_src( string $key ): string {
 ?>
 
 <!-- ╔══════════════════════════════════════╗
-     ║  PLATAIS VAKARS / MIXCLOUD          ║
+     ║  JAUNĀKIE RAIDĪJUMI                 ║
      ╚══════════════════════════════════════╝ -->
-<section id="radio" class="radio-section">
-    <div class="radio-inner">
+<?php $placeholder_img = esc_url( get_template_directory_uri() . '/assets/img/placeholder.svg' ); ?>
+<section id="radio" class="lrma-shows-section">
+    <div class="lrma-shows-inner">
 
-        <div class="radio-text reveal">
-            <div class="section-label">Jaunākais Raidījums</div>
-            <h2 class="section-title">Platais<br>Vakars</h2>
-            <p class="radio-desc">Nedēļas roka mūzikas apskats ar aizraujošiem viesiem, dziļām diskusijām un labāko Latvijas roka mūziku. Jauns raidījums katru piektdienu.</p>
-            <a href="https://www.mixcloud.com/LRMA/" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-flex;">Visi Raidījumi &nbsp;↗</a>
-        </div><!-- .radio-text -->
+        <div class="lrma-shows-header">
+            <div>
+                <div class="section-label">Raidījumi</div>
+                <h2 class="section-title">Jaunākie Raidījumi</h2>
+            </div>
+            <a href="https://www.mixcloud.com/LRMA/" target="_blank" rel="noopener" class="section-all-link">Visi Raidījumi &nbsp;↗</a>
+        </div>
 
-        <div class="mc-card reveal">
-            <a href="<?php echo esc_url( $pv['url'] ); ?>" target="_blank" rel="noopener" class="mc-thumb-wrap">
-                <?php if ( $pv['thumb'] ) : ?>
-                <img src="<?php echo esc_url( $pv['thumb'] ); ?>"
-                     alt="<?php echo esc_attr( 'Platais Vakars — ' . $pv['name'] ); ?>"
-                     class="mc-thumb-img">
-                <?php endif; ?>
-                <div class="mc-thumb-overlay">
-                    <svg class="mc-play-icon" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+        <div class="lrma-shows-grid reveal">
+
+            <!-- Platais Vakars -->
+            <a href="<?php echo esc_url( $pv['url'] ); ?>" target="_blank" rel="noopener" class="lrma-show-card">
+                <div class="lrma-show-thumb-wrap">
+                    <img src="<?php echo esc_url( $pv['thumb'] ); ?>"
+                         alt="<?php echo esc_attr( 'Platais Vakars — ' . $pv['name'] ); ?>"
+                         onerror="this.onerror=null;this.src='<?php echo $placeholder_img; ?>'"
+                         loading="lazy">
+                    <div class="lrma-show-thumb-overlay">
+                        <svg class="mc-play-icon" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                    </div>
+                </div>
+                <div class="lrma-show-card-body">
+                    <div class="lrma-show-name">Platais Vakars</div>
+                    <div class="lrma-show-title"><?php echo esc_html( $pv['name'] ); ?></div>
+                    <?php if ( $pv['date'] ) : ?>
+                    <div class="lrma-show-date"><?php echo esc_html( $pv['date'] ); ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="mc-player">
+                    <iframe width="100%" height="120"
+                        src="<?php echo esc_url( lrma_mc_widget_src( $pv['key'] ) ); ?>"
+                        frameborder="0"
+                        allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
+                        loading="lazy"></iframe>
                 </div>
             </a>
-            <div class="mc-body">
-                <div class="mc-meta">
-                    <span class="card-tag">Platais Vakars</span>
-                    <?php if ( $pv['date'] ) : ?><span class="mc-date"><?php echo esc_html( $pv['date'] ); ?></span><?php endif; ?>
+
+            <!-- Roka Nemieri -->
+            <a href="<?php echo esc_url( $rn['url'] ); ?>" target="_blank" rel="noopener" class="lrma-show-card">
+                <div class="lrma-show-thumb-wrap">
+                    <img src="<?php echo esc_url( $rn['thumb'] ); ?>"
+                         alt="<?php echo esc_attr( 'Roka Nemieri — ' . $rn['name'] ); ?>"
+                         onerror="this.onerror=null;this.src='<?php echo $placeholder_img; ?>'"
+                         loading="lazy">
+                    <div class="lrma-show-thumb-overlay">
+                        <svg class="mc-play-icon" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                    </div>
                 </div>
-                <div class="mc-title"><?php echo esc_html( $pv['name'] ); ?></div>
-            </div>
-            <div class="mc-player">
-                <iframe width="100%" height="120"
-                    src="<?php echo esc_url( lrma_mc_widget_src( $pv['key'] ) ); ?>"
-                    frameborder="0"
-                    allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
-                    loading="lazy"></iframe>
-            </div>
-        </div><!-- .mc-card -->
-
-    </div><!-- .radio-inner -->
-</section>
-
-<!-- ╔══════════════════════════════════════╗
-     ║  ROKA NEMIERI / MIXCLOUD            ║
-     ╚══════════════════════════════════════╝ -->
-<section class="radio-section radio-section--alt">
-    <div class="radio-inner radio-inner--flip">
-
-        <div class="mc-card reveal">
-            <a href="<?php echo esc_url( $rn['url'] ); ?>" target="_blank" rel="noopener" class="mc-thumb-wrap">
-                <?php if ( $rn['thumb'] ) : ?>
-                <img src="<?php echo esc_url( $rn['thumb'] ); ?>"
-                     alt="<?php echo esc_attr( 'Roka Nemieri — ' . $rn['name'] ); ?>"
-                     class="mc-thumb-img">
-                <?php endif; ?>
-                <div class="mc-thumb-overlay">
-                    <svg class="mc-play-icon" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21"/></svg>
+                <div class="lrma-show-card-body">
+                    <div class="lrma-show-name">Roka Nemieri</div>
+                    <div class="lrma-show-title"><?php echo esc_html( $rn['name'] ); ?></div>
+                    <?php if ( $rn['date'] ) : ?>
+                    <div class="lrma-show-date"><?php echo esc_html( $rn['date'] ); ?></div>
+                    <?php endif; ?>
+                </div>
+                <div class="mc-player">
+                    <iframe width="100%" height="120"
+                        src="<?php echo esc_url( lrma_mc_widget_src( $rn['key'] ) ); ?>"
+                        frameborder="0"
+                        allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
+                        loading="lazy"></iframe>
                 </div>
             </a>
-            <div class="mc-body">
-                <div class="mc-meta">
-                    <span class="card-tag">Roka Nemieri</span>
-                    <?php if ( $rn['date'] ) : ?><span class="mc-date"><?php echo esc_html( $rn['date'] ); ?></span><?php endif; ?>
-                </div>
-                <div class="mc-title"><?php echo esc_html( $rn['name'] ); ?></div>
-            </div>
-            <div class="mc-player">
-                <iframe width="100%" height="120"
-                    src="<?php echo esc_url( lrma_mc_widget_src( $rn['key'] ) ); ?>"
-                    frameborder="0"
-                    allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
-                    loading="lazy"></iframe>
-            </div>
-        </div><!-- .mc-card -->
 
-        <div class="radio-text reveal">
-            <div class="section-label">Jaunākais Raidījums</div>
-            <h2 class="section-title">Roka<br>Nemieri</h2>
-            <p class="radio-desc">Latvijas roka mūzikas nedēļas kopsavilkums ēterā Radio SWH Rock. Koncerti, albumi, intervijas — viss, kas notiek Latvijas roka ainā katru nedēļu.</p>
-            <a href="https://www.mixcloud.com/radioswhrock/" target="_blank" rel="noopener" class="btn btn-outline" style="display:inline-flex;">Visi Raidījumi &nbsp;↗</a>
-        </div><!-- .radio-text -->
+        </div><!-- .lrma-shows-grid -->
 
-    </div><!-- .radio-inner -->
+    </div><!-- .lrma-shows-inner -->
 </section>
 
 <!-- ╔══════════════════════════════════════╗
