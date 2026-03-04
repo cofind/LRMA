@@ -2370,6 +2370,24 @@ em  { font-style: normal; color: var(--red); }
   color: var(--white);
   margin-bottom: 16px;
 }
+.footer-logo a {
+  display: inline-block;
+  text-decoration: none;
+}
+.footer-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  opacity: .85;
+  transition: opacity .15s;
+}
+.footer-logo a:hover .footer-logo-img { opacity: 1; }
+.footer-logo-text {
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  color: var(--white);
+}
 
 .footer-desc {
   font-size: 13px;

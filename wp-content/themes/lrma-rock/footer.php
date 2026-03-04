@@ -22,7 +22,19 @@
     <div class="footer-top">
 
         <div class="footer-brand">
-            <div class="footer-logo">LR<em>M</em>A</div>
+            <?php
+            $fl_id  = get_theme_mod( 'custom_logo' );
+            $fl_url = $fl_id ? add_query_arg( 'v', $fl_id, wp_get_attachment_image_url( $fl_id, 'full' ) ) : '';
+            ?>
+            <div class="footer-logo">
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" aria-label="<?php bloginfo( 'name' ); ?>">
+                    <?php if ( $fl_url ) : ?>
+                    <img src="<?php echo esc_url( $fl_url ); ?>" alt="<?php bloginfo( 'name' ); ?>" class="footer-logo-img" loading="lazy">
+                    <?php else : ?>
+                    <span class="footer-logo-text">LR<em>M</em>A</span>
+                    <?php endif; ?>
+                </a>
+            </div>
             <p class="footer-desc">Latvijas Rokmūzikas Asociācija — Baltijas lielākais roka mūzikas medijs un mākslinieku atbalsta organizācija kopš 2016. gada.</p>
             <a href="mailto:<?php echo esc_attr( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>" class="footer-email">
                 <?php echo esc_html( get_theme_mod( 'site_email', 'info@lrma.lv' ) ); ?>
