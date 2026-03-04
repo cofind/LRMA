@@ -4438,3 +4438,136 @@ body.page-template-page-radio .rp-stage {
   .lrma-form-row { grid-template-columns: 1fr; }
 }
 
+/* ══════════════════════════════════════════════════════
+   LRM-98  Privātuma Politika page
+   ══════════════════════════════════════════════════════ */
+
+.lrma-page-hero {
+  padding: calc(var(--nav-h, 64px) + 72px) 40px 64px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.lrma-page-hero__title {
+  font-family: var(--font-head);
+  font-size: clamp(40px, 7vw, 88px);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: .92;
+  letter-spacing: -.02em;
+  color: var(--cream);
+  margin: 14px 0 20px;
+}
+.lrma-page-hero-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--dim);
+}
+
+.lrma-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+.lrma-container--narrow {
+  max-width: 760px;
+}
+
+.lrma-policy-body {
+  padding: 0 40px 100px;
+}
+
+.lrma-policy-block {
+  padding: 40px 0;
+  border-bottom: 1px solid var(--border);
+}
+.lrma-policy-block:last-child { border-bottom: none; }
+
+.lrma-policy-block p {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+  margin: 0 0 14px;
+}
+.lrma-policy-block p:last-child { margin-bottom: 0; }
+.lrma-policy-block a { color: var(--text); border-bottom: 1px solid var(--border2); }
+.lrma-policy-block a:hover { border-bottom-color: var(--text); }
+
+.lrma-policy-heading {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--cream);
+  margin: 0 0 20px;
+}
+
+.lrma-policy-subheading {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 24px 0 8px;
+}
+
+.lrma-policy-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+}
+.lrma-policy-list li {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  padding: 10px 0 10px 20px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.lrma-policy-list li:first-child { border-top: 1px solid var(--border); }
+.lrma-policy-list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--red);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.lrma-policy-list li a { color: var(--text); border-bottom: 1px solid var(--border2); }
+
+.lrma-policy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+.lrma-policy-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: left;
+  padding: 10px 20px 10px 0;
+  width: 140px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.lrma-policy-table td {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--cream);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.lrma-policy-table a { color: var(--cream); border-bottom: 1px solid var(--border2); }
+
+@media (max-width: 600px) {
+  .lrma-page-hero { padding: calc(var(--nav-h, 64px) + 40px) 24px 48px; }
+  .lrma-policy-body { padding: 0 24px 72px; }
+  .lrma-container { padding: 0 24px; }
+  .lrma-policy-table th { width: 100px; font-size: 9px; padding-right: 12px; }
+}
+
