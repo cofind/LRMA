@@ -44,7 +44,7 @@ function lrma_enqueue() {
         'https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@900&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap',
         [], null
     );
-    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.4.0' );
+    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.5.0' );
 
     wp_enqueue_script( 'lrma-main', get_template_directory_uri() . '/assets/js/main.js', [], '2.0.0', true );
     wp_enqueue_script( 'lrma-ajax-nav', get_template_directory_uri() . '/assets/js/ajax-nav.js', [], '1.0.0', true );
