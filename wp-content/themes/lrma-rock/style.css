@@ -1743,6 +1743,36 @@ em  { font-style: normal; color: var(--red); }
 }
 .ticket-btn:hover { background: var(--red); color: var(--white); }
 
+.concert-ticket {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.concert-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.concert-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.concerts-attribution {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+  margin-top: 12px;
+  text-align: center;
+}
+.concerts-attribution a { color: var(--muted); text-decoration: none; }
+.concerts-attribution a:hover { color: var(--text); }
+
 /* ============================================================
    STATS STRIP
    ============================================================ */

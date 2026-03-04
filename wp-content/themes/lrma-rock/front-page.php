@@ -236,29 +236,6 @@ if ( $interviews->have_posts() ) : $interviews->the_post();
 </section>
 <?php wp_reset_postdata(); endif; ?>
 
-<!-- ╔══════════════════════════════════════╗
-     ║  KONCERTI FEED                      ║
-     ╚══════════════════════════════════════╝ -->
-<?php $fp_koncerti = lrma_get_koncerti_feed( 6 ); ?>
-<?php if ( ! empty( $fp_koncerti ) ) : ?>
-<section class="fp-koncerti-section">
-	<div class="lrma-container">
-		<div class="fp-koncerti-header">
-			<div>
-				<div class="section-label">Koncerti</div>
-				<h2 class="section-title">Tuvākie Koncerti Latvijā</h2>
-			</div>
-			<a href="/category/koncerti/" class="section-all-link">Visi koncerti &nbsp;→</a>
-		</div>
-		<div class="archive-grid">
-			<?php foreach ( $fp_koncerti as $item ) : lrma_render_koncerti_card( $item ); endforeach; ?>
-		</div>
-		<div class="fp-koncerti-attribution">
-			Pasākumu dati: <a href="https://www.concerts-metal.com" target="_blank" rel="noopener">concerts-metal.com</a>
-		</div>
-	</div>
-</section>
-<?php endif; ?>
 
 <?php
 /* ── Mixcloud API helpers ─────────────────────────────────────────────
@@ -404,108 +381,7 @@ function lrma_mc_widget_src( string $key ): string {
      ║  CONCERTS                           ║
      ╚══════════════════════════════════════╝ -->
 <?php
-/* ── Fetch upcoming concerts from concerts-metal.com ─────────────────
- * Cached in a transient for 12 h. Falls back to hardcoded data if the
- * remote request fails or Cloudflare blocks it.
- * ------------------------------------------------------------------- */
-function lrma_fetch_cm_concerts( int $limit = 5 ): array {
-    $key    = 'lrma_cm_latvia_v1';
-    $cached = get_transient( $key );
-    if ( $cached !== false ) {
-        return $cached;
-    }
-
-    $source_url = 'https://en.concerts-metal.com/LV__Latvia';
-    $response   = wp_remote_get( $source_url, [
-        'timeout'    => 8,
-        'user-agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'headers'    => [
-            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language' => 'en-US,en;q=0.5',
-            'Referer'         => 'https://en.concerts-metal.com/',
-        ],
-    ] );
-
-    if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-        set_transient( $key, [], 20 * MINUTE_IN_SECONDS );
-        return [];
-    }
-
-    $html = wp_remote_retrieve_body( $response );
-
-    // Bail if we got a Cloudflare challenge instead of real content.
-    if ( str_contains( $html, 'cf-turnstile' ) || str_contains( $html, 'challenge-platform' ) ) {
-        set_transient( $key, [], 20 * MINUTE_IN_SECONDS );
-        return [];
-    }
-
-    /* ── Parse ── */
-    $dom = new DOMDocument();
-    libxml_use_internal_errors( true );
-    $dom->loadHTML( '<?xml encoding="UTF-8">' . $html );
-    libxml_clear_errors();
-    $xpath = new DOMXPath( $dom );
-
-    // Latvian month abbreviations keyed by PHP 'M' output.
-    $lv_months = [
-        'Jan' => 'Jan', 'Feb' => 'Feb', 'Mar' => 'Mar', 'Apr' => 'Apr',
-        'May' => 'Mai', 'Jun' => 'Jūn', 'Jul' => 'Jūl', 'Aug' => 'Aug',
-        'Sep' => 'Sep', 'Oct' => 'Okt', 'Nov' => 'Nov', 'Dec' => 'Dec',
-    ];
-
-    $today   = date( 'Y-m-d' );
-    $results = [];
-
-    foreach ( $xpath->query( '//tr' ) as $row ) {
-        if ( count( $results ) >= $limit ) break;
-
-        $tds = $row->getElementsByTagName( 'td' );
-        if ( $tds->length < 2 ) continue;
-
-        // Date is expected in the first <td> as DD/MM/YYYY.
-        $raw_date = trim( $tds->item(0)->textContent );
-        if ( ! preg_match( '#(\d{2})/(\d{2})/(\d{4})#', $raw_date, $m ) ) continue;
-
-        $date_iso = "{$m[3]}-{$m[2]}-{$m[1]}";
-        if ( $date_iso < $today ) continue; // skip past events
-
-        // Artist / event name + individual link from second <td>.
-        $td_artist   = $tds->item(1);
-        $artist_name = trim( $td_artist->textContent );
-        $event_url   = $source_url; // default to Latvia index
-
-        $anchors = $td_artist->getElementsByTagName( 'a' );
-        if ( $anchors->length > 0 ) {
-            $href = trim( $anchors->item(0)->getAttribute( 'href' ) );
-            if ( $href ) {
-                $event_url = str_starts_with( $href, 'http' )
-                    ? $href
-                    : 'https://en.concerts-metal.com' . $href;
-            }
-        }
-
-        // Venue / city from the remaining <td> cells.
-        $venue_parts = [];
-        for ( $i = 2; $i < min( $tds->length, 4 ); $i++ ) {
-            $t = trim( $tds->item( $i )->textContent );
-            if ( $t !== '' ) $venue_parts[] = $t;
-        }
-        $venue = implode( ', ', $venue_parts );
-
-        $en_month = date( 'M', mktime( 0, 0, 0, (int) $m[2], 1, (int) $m[3] ) );
-
-        $results[] = [
-            'day'   => $m[1],
-            'month' => $lv_months[ $en_month ] ?? $en_month,
-            'name'  => $artist_name,
-            'venue' => $venue,
-            'url'   => $event_url,
-        ];
-    }
-
-    set_transient( $key, $results, $results ? 12 * HOUR_IN_SECONDS : 20 * MINUTE_IN_SECONDS );
-    return $results;
-}
+$lv_months = [ 'Jan'=>'Jan','Feb'=>'Feb','Mar'=>'Mar','Apr'=>'Apr','May'=>'Mai','Jun'=>'Jūn','Jul'=>'Jūl','Aug'=>'Aug','Sep'=>'Sep','Oct'=>'Okt','Nov'=>'Nov','Dec'=>'Dec' ];
 
 /* ── Priority 1: custom CPT posts ─────────────────────────────────── */
 $cpt_concerts = new WP_Query( [
@@ -517,16 +393,29 @@ $cpt_concerts = new WP_Query( [
     'post_status'    => 'publish',
 ] );
 
-/* ── Priority 2: live feed ────────────────────────────────────────── */
-$live_concerts = $cpt_concerts->have_posts() ? [] : lrma_fetch_cm_concerts( 5 );
+/* ── Priority 2: live feed (LRM-63, functions.php) ───────────────── */
+/* Returns: [ 'title', 'url', 'thumb', 'date' (Unix ts) ] */
+$raw_live = $cpt_concerts->have_posts() ? [] : lrma_get_upcoming_concerts();
+$live_concerts = [];
+foreach ( $raw_live as $c ) {
+    $month_en        = $c['date'] ? date( 'M', $c['date'] ) : '';
+    $live_concerts[] = [
+        'day'   => $c['date'] ? date( 'd', $c['date'] ) : '??',
+        'month' => $lv_months[ $month_en ] ?? $month_en,
+        'name'  => $c['title'],
+        'venue' => '',
+        'url'   => $c['url'],
+        'thumb' => ! empty( $c['thumb'] ) ? $c['thumb'] : null,
+    ];
+}
 
 /* ── Priority 3: hardcoded fallback ──────────────────────────────── */
 $fallback_concerts = [
-    [ 'day' => '07', 'month' => 'Apr', 'name' => 'Thrown – Tour 2026',                    'venue' => 'Angars Concert Hall, Rīga', 'url' => 'https://en.concerts-metal.com/LV__Latvia' ],
-    [ 'day' => '02', 'month' => 'Mai', 'name' => 'The 69 Eyes – I Survive Tour 2026',     'venue' => 'Melnā Piektdiena, Rīga',    'url' => 'https://en.concerts-metal.com/LV__Latvia' ],
-    [ 'day' => '28', 'month' => 'Mai', 'name' => 'Laibach',                               'venue' => 'Spelet, Rīga',              'url' => 'https://en.concerts-metal.com/LV__Latvia' ],
-    [ 'day' => '16', 'month' => 'Jūn', 'name' => 'Bury Tomorrow – Tour 2026',             'venue' => 'Melnā Piektdiena, Rīga',    'url' => 'https://en.concerts-metal.com/LV__Latvia' ],
-    [ 'day' => '29', 'month' => 'Jūn', 'name' => 'Blood Incantation – Absolute Elsewhere', 'venue' => 'Spelet, Rīga',             'url' => 'https://en.concerts-metal.com/LV__Latvia' ],
+    [ 'day' => '07', 'month' => 'Apr', 'name' => 'Thrown – Tour 2026',                    'venue' => 'Angars Concert Hall, Rīga', 'url' => 'https://en.concerts-metal.com/LV__Latvia', 'thumb' => null ],
+    [ 'day' => '02', 'month' => 'Mai', 'name' => 'The 69 Eyes – I Survive Tour 2026',     'venue' => 'Melnā Piektdiena, Rīga',    'url' => 'https://en.concerts-metal.com/LV__Latvia', 'thumb' => null ],
+    [ 'day' => '28', 'month' => 'Mai', 'name' => 'Laibach',                               'venue' => 'Spelet, Rīga',              'url' => 'https://en.concerts-metal.com/LV__Latvia', 'thumb' => null ],
+    [ 'day' => '16', 'month' => 'Jūn', 'name' => 'Bury Tomorrow – Tour 2026',             'venue' => 'Melnā Piektdiena, Rīga',    'url' => 'https://en.concerts-metal.com/LV__Latvia', 'thumb' => null ],
+    [ 'day' => '29', 'month' => 'Jūn', 'name' => 'Blood Incantation – Absolute Elsewhere', 'venue' => 'Spelet, Rīga',             'url' => 'https://en.concerts-metal.com/LV__Latvia', 'thumb' => null ],
 ];
 ?>
 <section id="koncerti" class="concerts-section">
@@ -542,8 +431,7 @@ $fallback_concerts = [
             $ticket_url = get_post_meta( get_the_ID(), 'concert_ticket_url', true );
             $day        = $date_raw ? date( 'd', strtotime( $date_raw ) ) : '—';
             $month_en   = $date_raw ? date( 'M', strtotime( $date_raw ) ) : '—';
-            $lv_map     = [ 'Jan'=>'Jan','Feb'=>'Feb','Mar'=>'Mar','Apr'=>'Apr','May'=>'Mai','Jun'=>'Jūn','Jul'=>'Jūl','Aug'=>'Aug','Sep'=>'Sep','Oct'=>'Okt','Nov'=>'Nov','Dec'=>'Dec' ];
-            $month      = $lv_map[ $month_en ] ?? $month_en;
+            $month      = $lv_months[ $month_en ] ?? $month_en;
     ?>
         <div class="concert-row">
             <div class="concert-date">
@@ -565,7 +453,9 @@ $fallback_concerts = [
     else :
         /* ── Live feed or fallback ── */
         $display = $live_concerts ?: $fallback_concerts;
-        foreach ( $display as $c ) : ?>
+        foreach ( $display as $c ) :
+            $thumb = $c['thumb'] ?? null;
+        ?>
         <div class="concert-row">
             <div class="concert-date">
                 <span class="concert-day"><?php echo esc_html( $c['day'] ); ?></span>
@@ -576,6 +466,9 @@ $fallback_concerts = [
                 <?php if ( $c['venue'] ) : ?><div class="concert-venue"><?php echo esc_html( $c['venue'] ); ?></div><?php endif; ?>
             </div>
             <div class="concert-ticket">
+                <?php if ( $thumb ) : ?>
+                <div class="concert-thumb"><img src="<?php echo esc_url( $thumb ); ?>" alt="<?php echo esc_attr( $c['name'] ); ?>" loading="lazy"></div>
+                <?php endif; ?>
                 <a href="<?php echo esc_url( $c['url'] ); ?>" target="_blank" rel="noopener" class="ticket-btn">Info ↗</a>
             </div>
         </div>
@@ -587,6 +480,7 @@ $fallback_concerts = [
         <a href="https://en.concerts-metal.com/LV__Latvia" target="_blank" rel="noopener" class="btn btn-outline">
             Visi Koncerti Latvijā &nbsp;↗
         </a>
+        <div class="concerts-attribution">Dati: <a href="https://www.concerts-metal.com" target="_blank" rel="noopener">concerts-metal.com</a></div>
     </div>
 
 </section>
