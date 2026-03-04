@@ -883,34 +883,54 @@ em  { font-style: normal; color: var(--red); }
   margin: 0 auto;
 }
 
-/* ── Category filter tabs ── */
-.cat-filter-tabs {
+/* ── Editorial section header ── */
+.editorial-section-header {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+/* ── Raksti tabs (client-side, LRM-92) ── */
+.lrma-tabs {
+  display: flex;
+  gap: 4px;
   border-bottom: 1px solid var(--border);
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   overflow-x: auto;
   scrollbar-width: none;
+  flex-wrap: wrap;
 }
-.cat-filter-tabs::-webkit-scrollbar { display: none; }
+.lrma-tabs::-webkit-scrollbar { display: none; }
 
-.cat-tab {
+.lrma-tab {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--muted);
-  text-decoration: none;
-  padding: 10px 18px;
-  white-space: nowrap;
+  background: none;
+  border: none;
   border-bottom: 2px solid transparent;
+  padding: 10px 16px;
   margin-bottom: -1px;
+  white-space: nowrap;
+  cursor: pointer;
   transition: color .15s, border-color .15s;
 }
-.cat-tab:hover { color: var(--text); }
-.cat-tab.is-active {
-  color: var(--cream, #F0EBE0);
+.lrma-tab:hover { color: var(--cream); }
+.lrma-tab.is-active {
+  color: var(--cream);
   border-bottom-color: var(--red);
+}
+
+/* ── Tab panels ── */
+.lrma-tab-panel { display: none; }
+.lrma-tab-panel.is-active { display: block; }
+
+.lrma-tab-footer {
+  text-align: center;
+  padding-top: 28px;
 }
 
 /* ── Editorial grid layout ── */
@@ -1108,7 +1128,7 @@ em  { font-style: normal; color: var(--red); }
   }
   .strip-arrow { display: none !important; }
   .article-card.variant-small { width: clamp(140px, 45vw, 180px); }
-  .cat-tab { padding: 10px 12px; }
+  .lrma-tab { padding: 8px 10px; }
 }
 
 /* ============================================================

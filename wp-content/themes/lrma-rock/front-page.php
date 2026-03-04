@@ -59,66 +59,81 @@ body::after {
 </div>
 
 <!-- ╔══════════════════════════════════════╗
-     ║  EDITORIAL ARTICLE GRID             ║
+     ║  RAKSTI — TABBED EDITORIAL GRID     ║
      ╚══════════════════════════════════════╝ -->
 <?php
-// Filter tabs
-$filter_tabs = [
-    0  => 'Visi',
-    8  => 'Jaunumi',
-    10 => 'Recenzijas',
-    9  => 'Intervijas',
-    12 => 'Festivāli',
+// Pre-fetch all tab content server-side — JS toggles visibility, no page reload
+$raksti_tabs = [
+    'visi'      => get_posts( [ 'posts_per_page' => 9, 'post_status' => 'publish',
+                      'category_name' => 'jaunumi,intervijas,festivali,koncerti',
+                      'orderby' => 'date', 'order' => 'DESC' ] ),
+    'jaunumi'   => get_posts( [ 'posts_per_page' => 9, 'post_status' => 'publish',
+                      'category_name' => 'jaunumi', 'orderby' => 'date', 'order' => 'DESC' ] ),
+    'intervijas'=> get_posts( [ 'posts_per_page' => 9, 'post_status' => 'publish',
+                      'category_name' => 'intervijas', 'orderby' => 'date', 'order' => 'DESC' ] ),
+    'fk'        => get_posts( [ 'posts_per_page' => 9, 'post_status' => 'publish',
+                      'category_name' => 'festivali,koncerti', 'orderby' => 'date', 'order' => 'DESC' ] ),
 ];
-$active_cat = isset( $_GET['cat'] ) ? (int) $_GET['cat'] : 0;
-if ( ! array_key_exists( $active_cat, $filter_tabs ) ) {
-    $active_cat = 0;
-}
-
-// Grid query — 5 posts (1 featured + 4 secondary)
-$grid_args = [ 'posts_per_page' => 5, 'post_status' => 'publish' ];
-if ( $active_cat > 0 ) $grid_args['cat'] = $active_cat;
-$grid_query = new WP_Query( $grid_args );
-$grid_posts = $grid_query->posts;
-wp_reset_postdata();
-
-// "Visi Raksti" link — Jaunumi category archive
-$jaunumi_term = get_category_by_slug( 'jaunumi' );
-$jaunumi_link = $jaunumi_term ? get_category_link( $jaunumi_term->term_id ) : home_url( '/category/jaunumi/' );
+$raksti_labels = [
+    'visi'       => 'Visi',
+    'jaunumi'    => 'Jaunumi',
+    'intervijas' => 'Intervijas',
+    'fk'         => 'Festivāli / Koncerti',
+];
+$raksti_links = [
+    'visi'       => home_url( '/category/jaunumi/' ),
+    'jaunumi'    => home_url( '/category/jaunumi/' ),
+    'intervijas' => home_url( '/category/intervijas/' ),
+    'fk'         => home_url( '/category/koncerti/' ),
+];
+// Collect all shown IDs for the strip below
+$grid_posts = $raksti_tabs['visi'];
 ?>
-<section id="jaunumi" class="editorial-section">
+<section id="raksti" class="editorial-section">
 
-    <!-- Category filter tabs -->
-    <div class="cat-filter-tabs">
-        <?php foreach ( $filter_tabs as $cat_id => $label ) :
-            $is_active = ( $cat_id === $active_cat );
-            $tab_url   = $cat_id > 0
-                ? esc_url( add_query_arg( 'cat', $cat_id, home_url( '/' ) ) )
-                : esc_url( home_url( '/' ) );
-        ?>
-        <a href="<?php echo $tab_url; ?>"
-           class="cat-tab<?php echo $is_active ? ' is-active' : ''; ?>"
-           <?php echo $is_active ? 'aria-current="true"' : ''; ?>>
-            <?php echo esc_html( $label ); ?>
-        </a>
+    <div class="editorial-section-header">
+        <div class="section-label">Raksti</div>
+        <h2 class="section-title" style="margin:0;">Raksti</h2>
+    </div>
+
+    <!-- Tab bar — client-side switching -->
+    <div class="lrma-tabs" role="tablist">
+        <?php foreach ( $raksti_labels as $key => $label ) : ?>
+        <button
+            class="lrma-tab<?php echo $key === 'visi' ? ' is-active' : ''; ?>"
+            data-tab="<?php echo esc_attr( $key ); ?>"
+            role="tab"
+            aria-selected="<?php echo $key === 'visi' ? 'true' : 'false'; ?>"
+            aria-controls="lrma-tab-<?php echo esc_attr( $key ); ?>"
+        ><?php echo esc_html( $label ); ?></button>
         <?php endforeach; ?>
     </div>
 
-    <!-- Editorial grid: 1 large + 4 medium -->
-    <?php if ( ! empty( $grid_posts ) ) : ?>
-    <div class="editorial-grid reveal">
-        <?php foreach ( $grid_posts as $i => $gpost ) :
-            get_template_part( 'template-parts/card-article', null, [
-                'post'    => $gpost,
-                'variant' => ( $i === 0 ) ? 'large' : 'medium',
-            ] );
-        endforeach; ?>
-    </div>
-    <?php endif; ?>
+    <!-- Tab panels — all rendered, hidden until active -->
+    <?php foreach ( $raksti_tabs as $key => $tab_posts ) : ?>
+    <div
+        id="lrma-tab-<?php echo esc_attr( $key ); ?>"
+        class="lrma-tab-panel<?php echo $key === 'visi' ? ' is-active' : ''; ?>"
+        role="tabpanel"
+        aria-labelledby="lrma-tab-btn-<?php echo esc_attr( $key ); ?>"
+    >
+        <?php if ( ! empty( $tab_posts ) ) : ?>
+        <div class="archive-grid reveal">
+            <?php foreach ( $tab_posts as $tab_post ) :
+                get_template_part( 'template-parts/card-article', null, [ 'post' => $tab_post ] );
+            endforeach; ?>
+        </div>
+        <?php else : ?>
+        <div class="archive-empty"><div class="archive-empty__label">Nav rakstu šajā kategorijā.</div></div>
+        <?php endif; ?>
 
-    <div class="section-footer">
-        <a href="<?php echo esc_url( $jaunumi_link ); ?>" class="btn btn-outline">Visi Raksti &nbsp;→</a>
+        <div class="lrma-tab-footer">
+            <a href="<?php echo esc_url( $raksti_links[ $key ] ); ?>" class="btn btn-outline">
+                Visi <?php echo $key === 'visi' ? 'raksti' : esc_html( strtolower( $raksti_labels[ $key ] ) ); ?> &nbsp;→
+            </a>
+        </div>
     </div>
+    <?php endforeach; ?>
 
 </section>
 
@@ -126,7 +141,7 @@ $jaunumi_link = $jaunumi_term ? get_category_link( $jaunumi_term->term_id ) : ho
      ║  JUMS VARĒTU PATIKT STRIP           ║
      ╚══════════════════════════════════════╝ -->
 <?php
-$shown_ids   = array_column( $grid_posts, 'ID' );
+$shown_ids = array_column( $grid_posts, 'ID' );
 $strip_query = new WP_Query( [
     'posts_per_page' => 6,
     'post_status'    => 'publish',

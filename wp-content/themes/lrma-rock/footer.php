@@ -47,8 +47,7 @@
         <div class="footer-col">
             <h4>Saturs</h4>
             <ul>
-                <li><a href="<?php echo esc_url( home_url( '/category/jaunumi/' ) ); ?>">Jaunumi</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/category/recenzijas/' ) ); ?>">Recenzijas</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/category/jaunumi/' ) ); ?>">Raksti</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/category/intervijas/' ) ); ?>">Intervijas</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/category/festivali/' ) ); ?>">Festivāli</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/category/koncerti/' ) ); ?>">Koncerti</a></li>
