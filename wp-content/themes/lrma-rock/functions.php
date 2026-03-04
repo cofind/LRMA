@@ -559,15 +559,20 @@ function lrma_get_upcoming_concerts(): array {
 			continue;
 		}
 
-		// Extract Unix timestamp from flyer image filename: mini_1771873609--ARTIST.png
-		$img_src   = $img_node ? $img_node->getAttribute( 'src' ) : '';
-		$timestamp = null;
-		if ( preg_match( '/mini_(\d{9,10})--/', $img_src, $m ) ) {
-			$timestamp = (int) $m[1];
+		// Extract year+month from flyer folder path: images/flyers/202602/mini_...png
+		$img_src = $img_node ? $img_node->getAttribute( 'src' ) : '';
+		$year    = null;
+		$month   = null;
+		if ( preg_match( '|/flyers/(\d{4})(\d{2})/|', $img_src, $m ) ) {
+			$year  = (int) $m[1];
+			$month = (int) $m[2];
 		}
 
-		// Skip past events
-		if ( $timestamp && $timestamp < time() ) {
+		$timestamp = ( $year && $month ) ? mktime( 0, 0, 0, $month, 1, $year ) : null;
+
+		// Skip events before current month
+		$cutoff = mktime( 0, 0, 0, (int) date( 'n' ), 1, (int) date( 'Y' ) );
+		if ( $timestamp && $timestamp < $cutoff ) {
 			continue;
 		}
 
@@ -588,14 +593,17 @@ function lrma_get_upcoming_concerts(): array {
 		}
 
 		$concerts[] = [
-			'type'  => 'concert',
-			'title' => trim( $link_node->textContent ),
-			'url'   => $href,
-			'thumb' => $thumb,
-			'date'  => $timestamp,
+			'type'       => 'concert',
+			'title'      => trim( $link_node->textContent ),
+			'url'        => $href,
+			'thumb'      => $thumb,
+			'date'       => $timestamp,
+			'date_month' => $month,
+			'date_year'  => $year,
 		];
 	}
 
+	delete_transient( 'lrma_concerts_feed' );
 	set_transient( 'lrma_concerts_feed', $concerts, 6 * HOUR_IN_SECONDS );
 	return $concerts;
 }
