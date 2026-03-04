@@ -38,8 +38,13 @@
 
 <?php if ( have_posts() ) : ?>
 <div class="archive-grid">
-	<?php while ( have_posts() ) : the_post(); ?>
-		<?php get_template_part( 'template-parts/card-article', null, [ 'post' => $GLOBALS['post'] ] ); ?>
+	<?php
+	$card_count = 0;
+	while ( have_posts() ) : the_post();
+		$variant = ( $card_count === 0 && has_post_thumbnail() ) ? 'large' : 'medium';
+		$card_count++;
+	?>
+		<?php get_template_part( 'template-parts/card-article', null, [ 'post' => $GLOBALS['post'], 'variant' => $variant ] ); ?>
 	<?php endwhile; ?>
 </div>
 

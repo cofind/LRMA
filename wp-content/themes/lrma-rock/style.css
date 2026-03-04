@@ -2734,6 +2734,9 @@ em  { font-style: normal; color: var(--red); }
   max-width: 1400px;
   margin: 40px auto;
 }
+.archive-grid .article-card.variant-large {
+  min-height: 480px;
+}
 
 .archive-pagination {
   max-width: 1400px;
