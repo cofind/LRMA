@@ -553,27 +553,42 @@ function lrma_get_upcoming_concerts(): array {
 
 	foreach ( $headings as $h6 ) {
 		$link_node = $xpath->query( './/a', $h6 )->item( 0 );
-		$img_node  = $xpath->query( 'preceding-sibling::a[1]//img', $h6 )->item( 0 );
 
 		if ( ! $link_node ) {
 			continue;
 		}
 
-		// Extract year+month from flyer folder path: images/flyers/202602/mini_...png
-		$img_src = $img_node ? $img_node->getAttribute( 'src' ) : '';
-		$year    = null;
-		$month   = null;
-		if ( preg_match( '|/flyers/(\d{4})(\d{2})/|', $img_src, $m ) ) {
-			$year  = (int) $m[1];
-			$month = (int) $m[2];
+		// Flyer img is in the sibling col-sm-1 div — go up to the row div to find it
+		$img_node = $xpath->query(
+			'ancestor::div[contains(@class,"row")]//img[contains(@src,"flyers")]',
+			$h6
+		)->item( 0 );
+
+		// Full date (DD/MM/YYYY) is in text content of the parent col-sm div
+		$parent      = $h6->parentNode;
+		$parent_text = $parent ? $parent->textContent : '';
+		$timestamp   = null;
+		if ( preg_match( '|(\d{2})/(\d{2})/(\d{4})|', $parent_text, $dm ) ) {
+			$timestamp = mktime( 0, 0, 0, (int) $dm[2], (int) $dm[1], (int) $dm[3] );
 		}
 
-		$timestamp = ( $year && $month ) ? mktime( 0, 0, 0, $month, 1, $year ) : null;
-
-		// Skip events before current month
-		$cutoff = mktime( 0, 0, 0, (int) date( 'n' ), 1, (int) date( 'Y' ) );
-		if ( $timestamp && $timestamp < $cutoff ) {
+		// Skip past events
+		if ( $timestamp && $timestamp < time() ) {
 			continue;
+		}
+
+		// Venue link has /s- in href; city follows as a text node ", City"
+		$venue_node = $parent ? $xpath->query( './/a[contains(@href,"/s-")]', $parent )->item( 0 ) : null;
+		$venue      = '';
+		if ( $venue_node ) {
+			$venue = trim( $venue_node->textContent );
+			$next  = $venue_node->nextSibling;
+			if ( $next && $next->nodeType === XML_TEXT_NODE ) {
+				$city = trim( ltrim( trim( $next->nodeValue ), ',' ) );
+				if ( $city ) {
+					$venue .= ', ' . $city;
+				}
+			}
 		}
 
 		$href = $link_node->getAttribute( 'href' );
@@ -593,13 +608,12 @@ function lrma_get_upcoming_concerts(): array {
 		}
 
 		$concerts[] = [
-			'type'       => 'concert',
-			'title'      => trim( $link_node->textContent ),
-			'url'        => $href,
-			'thumb'      => $thumb,
-			'date'       => $timestamp,
-			'date_month' => $month,
-			'date_year'  => $year,
+			'type'  => 'concert',
+			'title' => trim( $link_node->textContent ),
+			'url'   => $href,
+			'thumb' => $thumb,
+			'date'  => $timestamp,
+			'venue' => $venue,
 		];
 	}
 

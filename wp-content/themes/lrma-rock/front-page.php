@@ -398,17 +398,12 @@ $cpt_concerts = new WP_Query( [
 $raw_live = $cpt_concerts->have_posts() ? [] : lrma_get_upcoming_concerts();
 $live_concerts = [];
 foreach ( $raw_live as $c ) {
-    $month_en    = $c['date'] ? date( 'M', $c['date'] ) : '';
-    $month_label = $lv_months[ $month_en ] ?? $month_en;
-    // Append short year suffix if not current year (e.g. " '26")
-    if ( ! empty( $c['date_year'] ) && $c['date_year'] !== (int) date( 'Y' ) ) {
-        $month_label .= " '" . substr( (string) $c['date_year'], 2 );
-    }
+    $month_en        = $c['date'] ? date( 'M', $c['date'] ) : '';
     $live_concerts[] = [
-        'day'   => $month_label ?: '—',
-        'month' => '',
+        'day'   => $c['date'] ? date_i18n( 'j', $c['date'] ) : '—',
+        'month' => $lv_months[ $month_en ] ?? $month_en,
         'name'  => $c['title'],
-        'venue' => '',
+        'venue' => $c['venue'] ?? '',
         'url'   => $c['url'],
         'thumb' => ! empty( $c['thumb'] ) ? $c['thumb'] : null,
     ];
