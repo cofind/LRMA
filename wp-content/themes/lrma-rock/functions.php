@@ -599,21 +599,25 @@ function lrma_get_upcoming_concerts(): array {
 			$href = 'https://en.concerts-metal.com/' . ltrim( $href, '/' );
 		}
 
-		$thumb = null;
+		$thumb      = null;
+		$thumb_full = null;
 		if ( $img_node ) {
 			$src   = $img_node->getAttribute( 'src' );
-			$thumb = str_starts_with( $src, 'http' )
+			$base  = str_starts_with( $src, 'http' )
 				? $src
 				: 'https://broadcast.concerts-metal.com/' . ltrim( $src, '/' );
+			$thumb      = $base;                               // mini_ — for 52px front-page row
+			$thumb_full = str_replace( '/mini_', '/', $base ); // full-size — for cards
 		}
 
 		$concerts[] = [
-			'type'  => 'concert',
-			'title' => trim( $link_node->textContent ),
-			'url'   => $href,
-			'thumb' => $thumb,
-			'date'  => $timestamp,
-			'venue' => $venue,
+			'type'       => 'concert',
+			'title'      => trim( $link_node->textContent ),
+			'url'        => $href,
+			'thumb'      => $thumb,
+			'thumb_full' => $thumb_full,
+			'date'       => $timestamp,
+			'venue'      => $venue,
 		];
 	}
 
@@ -680,16 +684,18 @@ function lrma_render_koncerti_card( array $item ): void {
 	}
 
 	// Concert event card
-	$title = esc_html( $item['title'] );
-	$url   = esc_url( $item['url'] );
-	$date  = $item['date'] ? date_i18n( 'j. F', $item['date'] ) : '';
-	$thumb = $item['thumb'] ? esc_url( $item['thumb'] ) : '';
+	$title      = esc_html( $item['title'] );
+	$url        = esc_url( $item['url'] );
+	$date       = $item['date'] ? date_i18n( 'j. F', $item['date'] ) : '';
+	$thumb      = esc_url( $item['thumb_full'] ?? $item['thumb'] ?? '' );
+	$thumb_mini = esc_url( $item['thumb'] ?? '' );
 	?>
 	<a href="<?php echo $url; ?>" target="_blank" rel="noopener"
 	   class="article-card variant-medium article-card--event">
 		<?php if ( $thumb ) : ?>
 		<div class="article-card__img">
-			<img src="<?php echo $thumb; ?>" alt="<?php echo $title; ?>" loading="lazy">
+			<img src="<?php echo $thumb; ?>" alt="<?php echo $title; ?>" loading="lazy"
+			     <?php if ( $thumb_mini && $thumb !== $thumb_mini ) : ?>onerror="this.onerror=null;this.src='<?php echo $thumb_mini; ?>'"<?php endif; ?>>
 		</div>
 		<?php endif; ?>
 		<div class="article-card__body">
