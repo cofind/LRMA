@@ -1,5 +1,43 @@
 <?php get_header(); ?>
 
+<?php if ( is_category( 'koncerti' ) ) : ?>
+
+<?php
+// Unified feed: recent Koncerti articles + upcoming concert events
+$koncerti_feed = lrma_get_koncerti_feed( 12 );
+?>
+
+<div class="archive-header">
+	<div>
+		<div class="section-label">Kategorija</div>
+		<h1 class="archive-title">Koncerti</h1>
+	</div>
+	<a href="https://www.concerts-metal.com" target="_blank" rel="noopener" class="koncerti-attribution">
+		Dati: concerts-metal.com
+	</a>
+</div>
+
+<?php if ( ! empty( $koncerti_feed ) ) : ?>
+<div class="archive-grid">
+	<?php foreach ( $koncerti_feed as $item ) : lrma_render_koncerti_card( $item ); endforeach; ?>
+</div>
+<?php else : ?>
+<div class="archive-empty">
+	<div class="archive-empty__label">Pašlaik nav aktīvu pasākumu</div>
+	<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="btn btn-outline">← Uz sākumu</a>
+</div>
+<?php endif; ?>
+
+<div class="koncerti-archive-link">
+	<?php
+	$koncerti_cat = get_category_by_slug( 'koncerti' );
+	$all_url      = $koncerti_cat ? esc_url( get_category_link( $koncerti_cat ) . '?all=1' ) : esc_url( home_url( '/category/koncerti/' ) );
+	?>
+	<a href="<?php echo $all_url; ?>" class="btn-outline-mono">Visi koncerti raksti &nbsp;→</a>
+</div>
+
+<?php else : ?>
+
 <div class="archive-header">
 	<div>
 		<div class="section-label">Kategorija</div>
@@ -18,28 +56,6 @@
 	</div>
 	<?php endif; ?>
 </div>
-
-<?php if ( is_category( 'koncerti' ) ) : ?>
-<section class="koncerti-live">
-	<div class="koncerti-live-header">
-		<div class="section-label">Tuvākie Koncerti</div>
-		<h2 class="koncerti-live-title">Live Listings</h2>
-		<a href="https://www.concerts-metal.com" target="_blank" rel="noopener" class="koncerti-attribution">
-			concerts-metal.com
-		</a>
-	</div>
-	<div class="koncerti-iframe-wrap">
-		<iframe
-			title="Tuvākie koncerti Latvijā"
-			width="100%"
-			height="900"
-			frameBorder="0"
-			loading="lazy"
-			src="https://www.concerts-metal.com/ie-502_0d0d0d_cccccc_b_l5__latvia.html"
-		></iframe>
-	</div>
-</section>
-<?php endif; ?>
 
 <?php if ( have_posts() ) : ?>
 <div class="archive-grid">
@@ -61,6 +77,8 @@
 	<div class="archive-empty__label">Nav rakstu šajā kategorijā</div>
 	<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="btn btn-outline">← Uz sākumu</a>
 </div>
+<?php endif; ?>
+
 <?php endif; ?>
 
 <?php get_footer(); ?>

@@ -44,7 +44,7 @@ function lrma_enqueue() {
         'https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@900&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap',
         [], null
     );
-    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.5.0' );
+    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.6.0' );
 
     wp_enqueue_script( 'lrma-main', get_template_directory_uri() . '/assets/js/main.js', [], '2.0.0', true );
     wp_enqueue_script( 'lrma-ajax-nav', get_template_directory_uri() . '/assets/js/ajax-nav.js', [], '1.0.0', true );
@@ -512,6 +512,170 @@ add_action( 'template_redirect', function () {
 		exit;
 	}
 } );
+
+// ─── Koncerti: server-side fetch + unified feed ───────────────────────────────
+
+/**
+ * Fetch upcoming concerts from concerts-metal.com (Latvia, next 5).
+ * Parses event dates from Unix timestamps embedded in flyer image filenames.
+ * Cached 6h; returns [] on failure.
+ */
+function lrma_get_upcoming_concerts(): array {
+	$cached = get_transient( 'lrma_concerts_feed' );
+	if ( $cached !== false ) {
+		return $cached;
+	}
+
+	$response = wp_remote_get(
+		'https://broadcast.concerts-metal.com/ie-502_666666_000000_b_l5__latvia.html',
+		[ 'timeout' => 5, 'user-agent' => 'LRMA/1.0' ]
+	);
+
+	if ( is_wp_error( $response ) || wp_remote_retrieve_response_code( $response ) !== 200 ) {
+		set_transient( 'lrma_concerts_feed', [], 20 * MINUTE_IN_SECONDS );
+		return [];
+	}
+
+	$html = wp_remote_retrieve_body( $response );
+
+	libxml_use_internal_errors( true );
+	$dom = new DOMDocument();
+	$dom->loadHTML( '<?xml encoding="utf-8"?>' . $html );
+	libxml_clear_errors();
+
+	$xpath    = new DOMXPath( $dom );
+	$headings = $xpath->query( '//h6' );
+	$concerts = [];
+
+	foreach ( $headings as $h6 ) {
+		$link_node = $xpath->query( './/a', $h6 )->item( 0 );
+		$img_node  = $xpath->query( 'preceding-sibling::a[1]//img', $h6 )->item( 0 );
+
+		if ( ! $link_node ) {
+			continue;
+		}
+
+		// Extract Unix timestamp from flyer image filename: mini_1771873609--ARTIST.png
+		$img_src   = $img_node ? $img_node->getAttribute( 'src' ) : '';
+		$timestamp = null;
+		if ( preg_match( '/mini_(\d{9,10})--/', $img_src, $m ) ) {
+			$timestamp = (int) $m[1];
+		}
+
+		// Skip past events
+		if ( $timestamp && $timestamp < time() ) {
+			continue;
+		}
+
+		$href = $link_node->getAttribute( 'href' );
+		// Resolve relative href
+		if ( str_starts_with( $href, '.' ) ) {
+			$href = 'https://en.concerts-metal.com' . ltrim( $href, '.' );
+		} elseif ( ! str_starts_with( $href, 'http' ) ) {
+			$href = 'https://en.concerts-metal.com/' . ltrim( $href, '/' );
+		}
+
+		$thumb = null;
+		if ( $img_node ) {
+			$src   = $img_node->getAttribute( 'src' );
+			$thumb = str_starts_with( $src, 'http' )
+				? $src
+				: 'https://broadcast.concerts-metal.com/' . ltrim( $src, '/' );
+		}
+
+		$concerts[] = [
+			'type'  => 'concert',
+			'title' => trim( $link_node->textContent ),
+			'url'   => $href,
+			'thumb' => $thumb,
+			'date'  => $timestamp,
+		];
+	}
+
+	set_transient( 'lrma_concerts_feed', $concerts, 6 * HOUR_IN_SECONDS );
+	return $concerts;
+}
+
+/**
+ * Merged feed: recent WP Koncerti articles + upcoming concert events.
+ * Sort: articles from the last 7 days float first, then chronological by date.
+ */
+function lrma_get_koncerti_feed( int $limit = 8 ): array {
+	$posts = get_posts( [
+		'category_name'  => 'koncerti',
+		'posts_per_page' => 10,
+		'date_query'     => [ [ 'after' => '60 days ago' ] ],
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		'post_status'    => 'publish',
+	] );
+
+	$items = array_map( fn( $p ) => [
+		'type' => 'article',
+		'id'   => $p->ID,
+		'date' => get_post_time( 'U', false, $p ),
+	], $posts );
+
+	$concerts = lrma_get_upcoming_concerts();
+	$merged   = array_merge( $items, $concerts );
+	$now      = time();
+
+	usort( $merged, function ( $a, $b ) use ( $now ) {
+		$da = $a['date'] ?? PHP_INT_MAX;
+		$db = $b['date'] ?? PHP_INT_MAX;
+
+		$a_recent = $a['type'] === 'article' && $da > $now - 7 * DAY_IN_SECONDS;
+		$b_recent = $b['type'] === 'article' && $db > $now - 7 * DAY_IN_SECONDS;
+
+		if ( $a_recent && ! $b_recent ) return -1;
+		if ( $b_recent && ! $a_recent ) return 1;
+
+		// Articles newest-first, concerts soonest-first — treat both as ascending from now
+		if ( $a['type'] === 'article' && $b['type'] === 'article' ) return $db - $da;
+		if ( $a['type'] === 'concert' && $b['type'] === 'concert' ) return $da - $db;
+		if ( $a['type'] === 'article' ) return $da > $now ? -1 : 1;
+		return $db > $now ? 1 : -1;
+	} );
+
+	return array_slice( $merged, 0, $limit );
+}
+
+/**
+ * Render a single card from the Koncerti feed (article or event).
+ */
+function lrma_render_koncerti_card( array $item ): void {
+	if ( $item['type'] === 'article' ) {
+		global $post;
+		$post = get_post( $item['id'] );
+		setup_postdata( $post );
+		get_template_part( 'template-parts/card-article', null, [ 'post' => $post, 'context' => 'koncerti' ] );
+		wp_reset_postdata();
+		return;
+	}
+
+	// Concert event card
+	$title = esc_html( $item['title'] );
+	$url   = esc_url( $item['url'] );
+	$date  = $item['date'] ? date_i18n( 'j. F', $item['date'] ) : '';
+	$thumb = $item['thumb'] ? esc_url( $item['thumb'] ) : '';
+	?>
+	<a href="<?php echo $url; ?>" target="_blank" rel="noopener"
+	   class="article-card variant-medium article-card--event">
+		<?php if ( $thumb ) : ?>
+		<div class="article-card__img">
+			<img src="<?php echo $thumb; ?>" alt="<?php echo $title; ?>" loading="lazy">
+		</div>
+		<?php endif; ?>
+		<div class="article-card__body">
+			<div class="card-tag card-tag--event">Pasākums</div>
+			<h3 class="article-card__title"><?php echo $title; ?></h3>
+			<div class="card-meta">
+				<?php echo $date; ?><?php echo $date ? ' · ' : ''; ?>concerts-metal.com
+			</div>
+		</div>
+	</a>
+	<?php
+}
 
 // ─── Newsletter form handler ───────────────────────────────────────────────────
 add_action( 'admin_post_nopriv_lrma_newsletter', 'lrma_handle_newsletter' );

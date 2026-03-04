@@ -222,30 +222,28 @@ if ( $interviews->have_posts() ) : $interviews->the_post();
 <?php wp_reset_postdata(); endif; ?>
 
 <!-- ╔══════════════════════════════════════╗
-     ║  KONCERTI CAROUSEL                  ║
+     ║  KONCERTI FEED                      ║
      ╚══════════════════════════════════════╝ -->
-<section class="fp-koncerti-carousel">
+<?php $fp_koncerti = lrma_get_koncerti_feed( 6 ); ?>
+<?php if ( ! empty( $fp_koncerti ) ) : ?>
+<section class="fp-koncerti-section">
 	<div class="lrma-container">
-		<div class="fp-koncerti-carousel-header">
+		<div class="fp-koncerti-header">
 			<div>
 				<div class="section-label">Koncerti</div>
 				<h2 class="section-title">Tuvākie Koncerti Latvijā</h2>
 			</div>
 			<a href="/category/koncerti/" class="section-all-link">Visi koncerti &nbsp;→</a>
 		</div>
-		<iframe
-			title="Tuvākie koncerti Latvijā"
-			width="100%"
-			height="400"
-			frameBorder="0"
-			loading="lazy"
-			src="https://www.concerts-metal.com/ie-505_0d0d0d_cccccc_b__Latvia.html"
-		></iframe>
+		<div class="archive-grid">
+			<?php foreach ( $fp_koncerti as $item ) : lrma_render_koncerti_card( $item ); endforeach; ?>
+		</div>
 		<div class="fp-koncerti-attribution">
-			<a href="https://www.concerts-metal.com" target="_blank" rel="noopener">concerts-metal.com</a>
+			Pasākumu dati: <a href="https://www.concerts-metal.com" target="_blank" rel="noopener">concerts-metal.com</a>
 		</div>
 	</div>
 </section>
+<?php endif; ?>
 
 <?php
 /* ── Mixcloud API helpers ─────────────────────────────────────────────
