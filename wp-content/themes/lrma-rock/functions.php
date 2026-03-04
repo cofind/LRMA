@@ -53,8 +53,9 @@ function lrma_enqueue() {
         'homeUrl'     => home_url( '/' ),
     ] );
     wp_localize_script( 'lrma-main', 'lrmaAjax', [
-        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-        'nonce'   => wp_create_nonce( 'lrma_newsletter_nonce' ),
+        'ajaxUrl'          => admin_url( 'admin-ajax.php' ),
+        'nonce'            => wp_create_nonce( 'lrma_newsletter_nonce' ),
+        'membershipNonce'  => wp_create_nonce( 'lrma_membership_nonce' ),
     ] );
 }
 add_action( 'wp_enqueue_scripts', 'lrma_enqueue' );
@@ -738,3 +739,145 @@ function lrma_handle_newsletter_ajax() {
 
 	wp_send_json_success( [ 'message' => 'Paldies! Esat veiksmīgi pieteikušies.' ] );
 }
+
+// ─── CPT: Biedru pieteikumi ───────────────────────────────────────────────────
+add_action( 'init', function () {
+	register_post_type( 'lrma_member_app', [
+		'labels'       => [
+			'name'          => 'Biedru pieteikumi',
+			'singular_name' => 'Pieteikums',
+			'menu_name'     => 'Biedru pieteikumi',
+		],
+		'public'       => false,
+		'show_ui'      => true,
+		'show_in_menu' => true,
+		'menu_icon'    => 'dashicons-groups',
+		'supports'     => [ 'title' ],
+		'capabilities' => [ 'create_posts' => 'do_not_allow' ],
+		'map_meta_cap' => true,
+	] );
+} );
+
+// ─── Admin columns ────────────────────────────────────────────────────────────
+add_filter( 'manage_lrma_member_app_posts_columns', function ( $cols ) {
+	return [
+		'cb'          => $cols['cb'],
+		'title'       => 'Vārds / E-pasts',
+		'lrma_role'   => 'Loma',
+		'lrma_band'   => 'Grupa',
+		'lrma_status' => 'Statuss',
+		'lrma_date'   => 'Datums',
+	];
+} );
+
+add_action( 'manage_lrma_member_app_posts_custom_column', function ( $col, $post_id ) {
+	switch ( $col ) {
+		case 'lrma_role':   echo esc_html( get_post_meta( $post_id, '_lrma_role',   true ) ); break;
+		case 'lrma_band':   echo esc_html( get_post_meta( $post_id, '_lrma_band',   true ) ); break;
+		case 'lrma_status': echo esc_html( get_post_meta( $post_id, '_lrma_status', true ) ); break;
+		case 'lrma_date':   echo esc_html( get_post_meta( $post_id, '_lrma_date',   true ) ); break;
+	}
+}, 10, 2 );
+
+// ─── Meta box ─────────────────────────────────────────────────────────────────
+add_action( 'add_meta_boxes', function () {
+	add_meta_box(
+		'lrma_application_details',
+		'Pieteikuma detaļas',
+		function ( $post ) {
+			$fields = [
+				'Vārds'    => '_lrma_name',
+				'E-pasts'  => '_lrma_email',
+				'Tālrunis' => '_lrma_phone',
+				'Loma'     => '_lrma_role',
+				'Grupa'    => '_lrma_band',
+				'Sociālie' => '_lrma_social',
+				'Ziņojums' => '_lrma_message',
+				'Statuss'  => '_lrma_status',
+				'Saņemts'  => '_lrma_date',
+			];
+			echo '<table style="width:100%;border-collapse:collapse">';
+			foreach ( $fields as $label => $key ) {
+				$val = get_post_meta( $post->ID, $key, true );
+				echo '<tr><th style="text-align:left;padding:6px 12px 6px 0;width:120px;border-bottom:1px solid #eee">' . esc_html( $label ) . '</th>';
+				echo '<td style="padding:6px 0;border-bottom:1px solid #eee">' . esc_html( $val ) . '</td></tr>';
+			}
+			echo '</table>';
+			$status = get_post_meta( $post->ID, '_lrma_status', true );
+			wp_nonce_field( 'lrma_app_status', 'lrma_app_status_nonce' );
+			echo '<p style="margin-top:16px"><label><strong>Mainīt statusu:</strong><br>';
+			echo '<select name="lrma_app_status" style="margin-top:4px">';
+			foreach ( [ 'jauns', 'izskatīts', 'apstiprināts', 'noraidīts' ] as $opt ) {
+				echo '<option value="' . esc_attr( $opt ) . '"' . selected( $status, $opt, false ) . '>' . esc_html( ucfirst( $opt ) ) . '</option>';
+			}
+			echo '</select></label></p>';
+		},
+		'lrma_member_app',
+		'normal',
+		'high'
+	);
+} );
+
+add_action( 'save_post_lrma_member_app', function ( $post_id ) {
+	if ( ! isset( $_POST['lrma_app_status_nonce'] ) ) return;
+	if ( ! wp_verify_nonce( $_POST['lrma_app_status_nonce'], 'lrma_app_status' ) ) return;
+	if ( isset( $_POST['lrma_app_status'] ) ) {
+		update_post_meta( $post_id, '_lrma_status', sanitize_text_field( $_POST['lrma_app_status'] ) );
+	}
+} );
+
+// ─── AJAX: Membership application ────────────────────────────────────────────
+add_action( 'wp_ajax_nopriv_lrma_membership', 'lrma_handle_membership' );
+add_action( 'wp_ajax_lrma_membership',        'lrma_handle_membership' );
+
+function lrma_handle_membership() {
+	if ( ! check_ajax_referer( 'lrma_membership_nonce', 'nonce', false ) ) {
+		wp_send_json_error( [ 'message' => 'Drošības kļūda.' ], 403 );
+	}
+
+	$name    = sanitize_text_field( $_POST['name']    ?? '' );
+	$email   = sanitize_email( $_POST['email']        ?? '' );
+	$phone   = sanitize_text_field( $_POST['phone']   ?? '' );
+	$role    = sanitize_text_field( $_POST['role']    ?? '' );
+	$band    = sanitize_text_field( $_POST['band']    ?? '' );
+	$social  = esc_url_raw( $_POST['social']          ?? '' );
+	$message = sanitize_textarea_field( $_POST['message'] ?? '' );
+
+	if ( ! $name || ! is_email( $email ) ) {
+		wp_send_json_error( [ 'message' => 'Lūdzu aizpildi visus obligātos laukus.' ], 400 );
+	}
+
+	$post_id = wp_insert_post( [
+		'post_type'   => 'lrma_member_app',
+		'post_title'  => $name . ' — ' . $email,
+		'post_status' => 'publish',
+	] );
+
+	if ( $post_id ) {
+		update_post_meta( $post_id, '_lrma_name',    $name );
+		update_post_meta( $post_id, '_lrma_email',   $email );
+		update_post_meta( $post_id, '_lrma_phone',   $phone );
+		update_post_meta( $post_id, '_lrma_role',    $role );
+		update_post_meta( $post_id, '_lrma_band',    $band );
+		update_post_meta( $post_id, '_lrma_social',  $social );
+		update_post_meta( $post_id, '_lrma_message', $message );
+		update_post_meta( $post_id, '_lrma_date',    current_time( 'mysql' ) );
+		update_post_meta( $post_id, '_lrma_status',  'jauns' );
+	}
+
+	wp_mail(
+		'info@lrma.lv',
+		'Jauns biedra pieteikums — ' . $name,
+		"Vārds: $name\nE-pasts: $email\nTālrunis: $phone\nLoma: $role\nGrupa: $band\nSociālie: $social\n\nZiņojums:\n$message"
+	);
+
+	wp_send_json_success( [ 'message' => 'Paldies! Jūsu pieteikums saņemts. Mēs sazināsimies ar jums tuvākajā laikā.' ] );
+}
+
+// ─── Redirect /biedri/ → /klut-par-biedru/ ───────────────────────────────────
+add_action( 'template_redirect', function () {
+	if ( is_page( 'biedri' ) || ( isset( $_SERVER['REQUEST_URI'] ) && rtrim( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' ) === '/biedri' ) ) {
+		wp_redirect( home_url( '/klut-par-biedru/' ), 301 );
+		exit;
+	}
+} );

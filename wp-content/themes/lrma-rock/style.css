@@ -4220,3 +4220,221 @@ body.page-template-page-radio .rp-stage {
   }
 }
 
+/* ══════════════════════════════════════════════════════
+   LRM-96  Membership page — Kļūt par Biedru
+   ══════════════════════════════════════════════════════ */
+
+/* ── Hero ── */
+.membership-hero {
+  padding: calc(var(--nav-h, 64px) + 80px) 40px 80px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.membership-hero__inner {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.membership-hero__title {
+  font-family: var(--font-head);
+  font-size: clamp(52px, 9vw, 110px);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: .92;
+  letter-spacing: -.02em;
+  color: var(--cream);
+  margin: 16px 0 24px;
+}
+.membership-hero__lead {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 36px;
+}
+
+/* ── Sections ── */
+.membership-section {
+  border-top: 1px solid var(--border);
+  padding: 72px 40px;
+}
+.membership-section--requirements {
+  background: var(--surface);
+}
+.membership-section__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.membership-section__inner--narrow {
+  max-width: 720px;
+}
+.membership-section__title {
+  font-family: var(--font-heading);
+  font-size: clamp(28px, 4vw, 48px);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--cream);
+  margin: 12px 0 40px;
+}
+
+/* ── Benefits grid ── */
+.lrma-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+}
+.lrma-benefit-card {
+  background: var(--bg);
+  padding: 32px 28px;
+  border-top: 2px solid transparent;
+  transition: border-color .2s;
+}
+.lrma-benefit-card:hover { border-top-color: var(--red); }
+.lrma-benefit-icon {
+  font-size: 22px;
+  margin-bottom: 16px;
+  display: block;
+  color: var(--red);
+}
+.lrma-benefit-title {
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  color: var(--cream);
+  margin-bottom: 10px;
+}
+.lrma-benefit-desc {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ── Requirements ── */
+.membership-req__lead {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.membership-req__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.membership-req__list li {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  padding-left: 20px;
+  position: relative;
+}
+.membership-req__list li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--red);
+  font-family: var(--font-mono);
+}
+
+/* ── Form section ── */
+.membership-form-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 72px 40px 100px;
+}
+.lrma-membership-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 8px;
+}
+.lrma-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.lrma-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.lrma-form-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lrma-form-input,
+.lrma-form-select,
+.lrma-form-textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color .15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.lrma-form-input:focus,
+.lrma-form-select:focus,
+.lrma-form-textarea:focus { border-color: rgba(240,235,224,.35); }
+.lrma-form-textarea { min-height: 110px; resize: vertical; }
+.lrma-form-select { appearance: none; cursor: pointer; }
+.lrma-form-field--checkbox .lrma-form-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  line-height: 1.5;
+}
+.lrma-form-field--checkbox input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; }
+.lrma-form-field--checkbox a { color: var(--text); }
+.lrma-membership-error {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--red);
+  min-height: 16px;
+  margin: 0;
+}
+.lrma-form-submit {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  cursor: pointer;
+  transition: opacity .15s;
+  align-self: flex-start;
+}
+.lrma-form-submit:hover { opacity: .85; }
+.lrma-form-submit:disabled { opacity: .4; cursor: default; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .lrma-benefits-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .membership-hero { padding: calc(var(--nav-h, 64px) + 48px) 24px 56px; }
+  .membership-section { padding: 48px 24px; }
+  .membership-form-section { padding: 48px 24px 72px; }
+  .lrma-benefits-grid { grid-template-columns: 1fr; }
+  .lrma-form-row { grid-template-columns: 1fr; }
+}
+

@@ -167,6 +167,44 @@
     });
   }
 
+  // ─── Membership application AJAX ─────────────────────────────────────────────
+  const membershipForm = document.querySelector('.lrma-membership-form');
+  if (membershipForm) {
+    const membershipError = document.getElementById('lrma-membership-error');
+
+    membershipForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (membershipError) membershipError.textContent = '';
+
+      const btn = membershipForm.querySelector('.lrma-form-submit');
+      const originalText = btn.textContent;
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      const data = new FormData(membershipForm);
+      data.set('action', 'lrma_membership');
+      data.set('nonce', (typeof lrmaAjax !== 'undefined') ? lrmaAjax.membershipNonce : '');
+
+      try {
+        const res  = await fetch((typeof lrmaAjax !== 'undefined') ? lrmaAjax.ajaxUrl : '/wp-admin/admin-ajax.php',
+                                 { method: 'POST', body: data });
+        const json = await res.json();
+        const message = json.data?.message ?? (json.success ? 'Paldies!' : 'Kļūda. Mēģini vēlreiz.');
+        if (json.success) {
+          if (newsletterPopup) openPopup(message);
+          membershipForm.reset();
+        } else {
+          if (membershipError) membershipError.textContent = message;
+        }
+      } catch {
+        if (membershipError) membershipError.textContent = 'Savienojuma kļūda. Lūdzu mēģini vēlreiz.';
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    });
+  }
+
   // ─── Raksti tabs (client-side, no page reload) ───────────────────────────────
   const tabBtns   = document.querySelectorAll('.lrma-tab');
   const tabPanels = document.querySelectorAll('.lrma-tab-panel');
