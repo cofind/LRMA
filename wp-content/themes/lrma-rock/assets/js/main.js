@@ -111,4 +111,22 @@
     track.parentNode.appendChild(clone);
   }
 
+  // ─── Raksti tabs (client-side, no page reload) ───────────────────────────────
+  const tabBtns   = document.querySelectorAll('.lrma-tab');
+  const tabPanels = document.querySelectorAll('.lrma-tab-panel');
+  if (tabBtns.length) {
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab;
+        tabBtns.forEach(t => {
+          t.classList.toggle('is-active', t.dataset.tab === target);
+          t.setAttribute('aria-selected', t.dataset.tab === target ? 'true' : 'false');
+        });
+        tabPanels.forEach(p => {
+          p.classList.toggle('is-active', p.id === 'lrma-tab-' + target);
+        });
+      });
+    });
+  }
+
 })();
