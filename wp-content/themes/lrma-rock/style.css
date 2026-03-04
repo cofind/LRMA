@@ -3960,3 +3960,84 @@ body { padding-top: calc(var(--ticker-h) + var(--header-h)); }
   .rp-strip-num  { font-size: 28px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LRM-63 — Koncerti Live Listings (category.php) + Front-page carousel
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Category page: live listings section ── */
+.koncerti-live {
+  padding: 32px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.koncerti-live-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.koncerti-live-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  color: var(--cream);
+  margin: 0;
+}
+
+.koncerti-attribution {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-left: auto;
+  text-decoration: none;
+}
+.koncerti-attribution:hover { color: var(--cream); }
+
+.koncerti-iframe-wrap {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.koncerti-iframe-wrap iframe {
+  display: block;
+  width: 100%;
+}
+
+/* ── Front page: carousel section ── */
+.fp-koncerti-carousel {
+  padding: 48px 0;
+  border-top: 1px solid var(--border);
+}
+
+.fp-koncerti-carousel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.fp-koncerti-attribution {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 8px;
+}
+.fp-koncerti-attribution a { color: inherit; text-decoration: none; }
+.fp-koncerti-attribution a:hover { color: var(--cream); }
+
+@media (max-width: 700px) {
+  .koncerti-live-header { flex-wrap: wrap; gap: 8px; }
+  .koncerti-attribution { margin-left: 0; }
+  .fp-koncerti-carousel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
