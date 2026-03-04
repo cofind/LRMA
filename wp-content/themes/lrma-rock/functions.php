@@ -141,6 +141,17 @@ function lrma_customizer( $wp_customize ) {
     $wp_customize->add_setting( 'lrma_roka_nemieri_title', [ 'default' => 'Roka Nemieri (25.02.2026)', 'sanitize_callback' => 'sanitize_text_field' ] );
     $wp_customize->add_control( 'lrma_roka_nemieri_title', [ 'label' => 'Roka Nemieri — epizodes nosaukums', 'section' => 'lrma_options', 'type' => 'text' ] );
 
+    // Followers count (editable by editors)
+    $wp_customize->add_setting( 'lrma_footer_followers', [
+        'default'           => '10K',
+        'sanitize_callback' => 'sanitize_text_field',
+    ] );
+    $wp_customize->add_control( 'lrma_footer_followers', [
+        'label'   => 'Sekotāju skaits (piemēram: 10K, 15K)',
+        'section' => 'lrma_options',
+        'type'    => 'text',
+    ] );
+
     // Default OG image (1200×630 recommended)
     $wp_customize->add_setting( 'og_default_image', [
         'default'           => '',
@@ -493,3 +504,19 @@ function lrma_social_meta() {
     }
 }
 add_action( 'wp_head', 'lrma_social_meta', 5 );
+
+// ─── Newsletter form handler ───────────────────────────────────────────────────
+add_action( 'admin_post_nopriv_lrma_newsletter', 'lrma_handle_newsletter' );
+add_action( 'admin_post_lrma_newsletter',        'lrma_handle_newsletter' );
+function lrma_handle_newsletter() {
+	check_admin_referer( 'lrma_newsletter_nonce' );
+	$email    = sanitize_email( $_POST['email'] ?? '' );
+	$redirect = wp_get_referer() ?: home_url();
+	if ( ! is_email( $email ) ) {
+		wp_redirect( $redirect . '?newsletter=error' );
+		exit;
+	}
+	wp_mail( 'info@lrma.lv', 'Jauns pieteikums biļetenam', "E-pasts: $email" );
+	wp_redirect( $redirect . '?newsletter=success' );
+	exit;
+}
