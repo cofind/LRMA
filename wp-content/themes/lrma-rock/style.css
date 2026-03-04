@@ -4041,3 +4041,45 @@ body { padding-top: calc(var(--ticker-h) + var(--header-h)); }
   .fp-koncerti-carousel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LRM-75 — Radio page: compact no-scroll full-viewport
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Lock the page to the viewport — no scrolling past the player */
+body.page-template-page-radio {
+  overflow: hidden;
+  height: 100dvh;
+  height: 100vh; /* fallback */
+}
+
+/* Hide the site footer — it's below the fold and clipped anyway;
+   footer <script> tags remain in the DOM and still execute. */
+body.page-template-page-radio .site-footer {
+  display: none;
+}
+
+/* Stage fills exactly the space below the nav */
+body.page-template-page-radio .rp-stage {
+  height: calc(100dvh - var(--nav-h, 64px));
+  height: calc(100vh  - var(--nav-h, 64px)); /* fallback */
+  min-height: unset;
+  padding: 24px 40px 28px; /* compact: was 48px top / 56px bottom */
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Tighten the player grid on smaller viewports so it still fits */
+@media (max-height: 640px) {
+  body.page-template-page-radio .rp-stage { padding: 16px 32px 20px; }
+  body.page-template-page-radio .rp-wave  { display: none; }       /* sacrificed for space */
+  body.page-template-page-radio .rp-app-links { display: none; }
+}
+
+@media (max-width: 700px) {
+  body.page-template-page-radio .rp-stage {
+    height: calc(100dvh - var(--nav-h, 64px));
+    height: calc(100vh  - var(--nav-h, 64px));
+    overflow-y: auto; /* allow scroll on portrait mobile if content taller */
+  }
+}
+
