@@ -15,7 +15,30 @@ $variant   = $args['variant'] ?? 'medium';
 $permalink = get_permalink( $card_post );
 $title     = get_the_title( $card_post );
 $cats      = get_the_category( $card_post->ID );
-$cat_name  = $cats ? $cats[0]->name : '';
+
+// Context-aware category label: prefer the category matching the current archive,
+// or an explicit context arg (e.g. 'koncerti'), to avoid always showing 'Jaunumi'.
+$cat_name = '';
+if ( ! empty( $args['context'] ) ) {
+	foreach ( $cats as $c ) {
+		if ( $c->slug === $args['context'] ) {
+			$cat_name = $c->name;
+			break;
+		}
+	}
+}
+if ( ! $cat_name && is_category() ) {
+	$queried = get_queried_object();
+	foreach ( $cats as $c ) {
+		if ( $c->term_id === $queried->term_id ) {
+			$cat_name = $c->name;
+			break;
+		}
+	}
+}
+if ( ! $cat_name ) {
+	$cat_name = $cats ? $cats[0]->name : '';
+}
 $date      = get_the_date( 'd.m.Y', $card_post );
 $read_min  = lrma_read_time( $card_post->ID );
 
