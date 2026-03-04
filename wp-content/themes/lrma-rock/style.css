@@ -2636,6 +2636,16 @@ em  { font-style: normal; color: var(--red); }
   margin-bottom: 28px;
 }
 
+.archive-suggestions {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: 60px;
+}
+
+.archive-suggestions__kicker {
+  padding: 32px 40px 20px;
+}
+
 /* ============================================================
    PAGE
    ============================================================ */
