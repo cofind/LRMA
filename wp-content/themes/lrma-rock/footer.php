@@ -8,19 +8,15 @@
             <div class="lrma-newsletter-title">Pieteikties</div>
             <p>Saņem jaunākās LRMA ziņas tieši savā e-pastā.</p>
         </div>
-        <form class="lrma-newsletter-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
-            <input type="hidden" name="action" value="lrma_newsletter">
-            <?php wp_nonce_field( 'lrma_newsletter_nonce' ); ?>
+        <form class="lrma-newsletter-form">
             <input type="email" name="email" placeholder="jūsu@epasts.lv" required>
             <label class="lrma-newsletter-gdpr">
                 <input type="checkbox" name="gdpr" required>
                 Piekrītu datu apstrādei saskaņā ar <a href="<?php echo esc_url( home_url( '/privatuma-politika/' ) ); ?>">privātuma politiku</a>
             </label>
             <button type="submit">Pieteikties →</button>
+            <div class="lrma-newsletter-error" id="lrma-newsletter-error" aria-live="polite"></div>
         </form>
-        <?php if ( isset( $_GET['newsletter'] ) && $_GET['newsletter'] === 'success' ) : ?>
-            <div class="lrma-newsletter-success">✓ Paldies! Jūs esat pieteikušies.</div>
-        <?php endif; ?>
     </div>
 
     <div class="footer-top">
@@ -83,6 +79,16 @@
     </div>
 
 </footer>
+
+<!-- Newsletter success popup -->
+<div id="lrma-newsletter-popup" class="lrma-popup" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="lrma-popup-title">
+    <div class="lrma-popup-box">
+        <button class="lrma-popup-close" aria-label="Aizvērt">✕</button>
+        <div class="lrma-popup-icon">✓</div>
+        <div class="lrma-popup-title" id="lrma-popup-title">Paldies!</div>
+        <div class="lrma-popup-message" id="lrma-popup-message"></div>
+    </div>
+</div>
 
 <!-- SCROLL REVEAL + RADIO TOGGLE -->
 <script>

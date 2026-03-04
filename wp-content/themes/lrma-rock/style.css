@@ -2236,6 +2236,74 @@ em  { font-style: normal; color: var(--red); }
   letter-spacing: .06em;
 }
 
+.lrma-newsletter-error {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 8px;
+  letter-spacing: .06em;
+  min-height: 1em;
+}
+
+/* ── Newsletter success popup ── */
+.lrma-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.lrma-popup.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+.lrma-popup-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 40px 48px;
+  max-width: 400px;
+  width: calc(100% - 32px);
+  text-align: center;
+  position: relative;
+}
+.lrma-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.lrma-popup-close:hover { color: var(--cream); }
+.lrma-popup-icon {
+  font-size: 32px;
+  color: #4ade80;
+  margin-bottom: 12px;
+}
+.lrma-popup-title {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--cream);
+  margin-bottom: 8px;
+}
+.lrma-popup-message {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+
 .site-footer {
   background: var(--surface);
   border-top: 1px solid var(--border);

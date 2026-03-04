@@ -44,13 +44,17 @@ function lrma_enqueue() {
         'https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@900&family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap',
         [], null
     );
-    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.7.0' );
+    wp_enqueue_style( 'lrma-style', get_stylesheet_uri(), [ 'lrma-fonts' ], '2.8.0' );
 
-    wp_enqueue_script( 'lrma-main', get_template_directory_uri() . '/assets/js/main.js', [], '2.1.0', true );
+    wp_enqueue_script( 'lrma-main', get_template_directory_uri() . '/assets/js/main.js', [], '2.2.0', true );
     wp_enqueue_script( 'lrma-ajax-nav', get_template_directory_uri() . '/assets/js/ajax-nav.js', [], '1.0.0', true );
     wp_localize_script( 'lrma-main', 'lrmaData', [
         'radioStream' => get_theme_mod( 'radio_url', 'https://rockradio.lv' ),
         'homeUrl'     => home_url( '/' ),
+    ] );
+    wp_localize_script( 'lrma-main', 'lrmaAjax', [
+        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+        'nonce'   => wp_create_nonce( 'lrma_newsletter_nonce' ),
     ] );
 }
 add_action( 'wp_enqueue_scripts', 'lrma_enqueue' );
@@ -677,18 +681,32 @@ function lrma_render_koncerti_card( array $item ): void {
 	<?php
 }
 
-// ─── Newsletter form handler ───────────────────────────────────────────────────
-add_action( 'admin_post_nopriv_lrma_newsletter', 'lrma_handle_newsletter' );
-add_action( 'admin_post_lrma_newsletter',        'lrma_handle_newsletter' );
-function lrma_handle_newsletter() {
-	check_admin_referer( 'lrma_newsletter_nonce' );
-	$email    = sanitize_email( $_POST['email'] ?? '' );
-	$redirect = wp_get_referer() ?: home_url();
-	if ( ! is_email( $email ) ) {
-		wp_redirect( $redirect . '?newsletter=error' );
-		exit;
+// ─── Newsletter AJAX handler ───────────────────────────────────────────────────
+add_action( 'wp_ajax_nopriv_lrma_newsletter', 'lrma_handle_newsletter_ajax' );
+add_action( 'wp_ajax_lrma_newsletter',        'lrma_handle_newsletter_ajax' );
+function lrma_handle_newsletter_ajax() {
+	if ( ! check_ajax_referer( 'lrma_newsletter_nonce', 'nonce', false ) ) {
+		wp_send_json_error( [ 'message' => 'Drošības kļūda. Lūdzu mēģini vēlreiz.' ], 403 );
 	}
-	wp_mail( 'info@lrma.lv', 'Jauns pieteikums biļetenam', "E-pasts: $email" );
-	wp_redirect( $redirect . '?newsletter=success' );
-	exit;
+
+	$email = sanitize_email( $_POST['email'] ?? '' );
+	if ( ! is_email( $email ) ) {
+		wp_send_json_error( [ 'message' => 'Lūdzu ievadi derīgu e-pasta adresi.' ], 400 );
+	}
+
+	$subscribers = get_option( 'lrma_newsletter_subscribers', [] );
+	if ( in_array( $email, $subscribers, true ) ) {
+		wp_send_json_success( [ 'message' => 'Šī e-pasta adrese jau ir reģistrēta.' ] );
+	}
+
+	$subscribers[] = $email;
+	update_option( 'lrma_newsletter_subscribers', $subscribers, false );
+
+	wp_mail(
+		'info@lrma.lv',
+		'Jauns biļetena pieteikums',
+		"Jauns abonents: $email\n\nKopā abonenti: " . count( $subscribers )
+	);
+
+	wp_send_json_success( [ 'message' => 'Paldies! Esat veiksmīgi pieteikušies.' ] );
 }
