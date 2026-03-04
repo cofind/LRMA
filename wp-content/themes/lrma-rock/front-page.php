@@ -221,6 +221,32 @@ if ( $interviews->have_posts() ) : $interviews->the_post();
 </section>
 <?php wp_reset_postdata(); endif; ?>
 
+<!-- ╔══════════════════════════════════════╗
+     ║  KONCERTI CAROUSEL                  ║
+     ╚══════════════════════════════════════╝ -->
+<section class="fp-koncerti-carousel">
+	<div class="lrma-container">
+		<div class="fp-koncerti-carousel-header">
+			<div>
+				<div class="section-label">Koncerti</div>
+				<h2 class="section-title">Tuvākie Koncerti Latvijā</h2>
+			</div>
+			<a href="/category/koncerti/" class="section-all-link">Visi koncerti &nbsp;→</a>
+		</div>
+		<iframe
+			title="Tuvākie koncerti Latvijā"
+			width="100%"
+			height="400"
+			frameBorder="0"
+			loading="lazy"
+			src="https://www.concerts-metal.com/ie-505_0d0d0d_cccccc_b__Latvia.html"
+		></iframe>
+		<div class="fp-koncerti-attribution">
+			<a href="https://www.concerts-metal.com" target="_blank" rel="noopener">concerts-metal.com</a>
+		</div>
+	</div>
+</section>
+
 <?php
 /* ── Mixcloud API helpers ─────────────────────────────────────────────
  * Fetches the latest cloudcast for a given Mixcloud username.
