@@ -111,6 +111,62 @@
     track.parentNode.appendChild(clone);
   }
 
+  // ─── Newsletter AJAX + success popup ────────────────────────────────────────
+  const newsletterForm  = document.querySelector('.lrma-newsletter-form');
+  const newsletterPopup = document.getElementById('lrma-newsletter-popup');
+  const popupMsg        = document.getElementById('lrma-popup-message');
+  const popupClose      = newsletterPopup?.querySelector('.lrma-popup-close');
+  const inlineError     = document.getElementById('lrma-newsletter-error');
+
+  if (newsletterForm && newsletterPopup) {
+    function closePopup() {
+      newsletterPopup.setAttribute('aria-hidden', 'true');
+      newsletterPopup.classList.remove('is-open');
+    }
+    function openPopup(message) {
+      if (popupMsg) popupMsg.textContent = message;
+      newsletterPopup.classList.add('is-open');
+      newsletterPopup.setAttribute('aria-hidden', 'false');
+      if (popupClose) popupClose.focus();
+    }
+
+    popupClose?.addEventListener('click', closePopup);
+    newsletterPopup.addEventListener('click', e => { if (e.target === newsletterPopup) closePopup(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+
+    newsletterForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (inlineError) inlineError.textContent = '';
+
+      const btn = newsletterForm.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      const data = new FormData(newsletterForm);
+      data.set('action', 'lrma_newsletter');
+      data.set('nonce', (typeof lrmaAjax !== 'undefined') ? lrmaAjax.nonce : '');
+
+      try {
+        const res  = await fetch((typeof lrmaAjax !== 'undefined') ? lrmaAjax.ajaxUrl : '/wp-admin/admin-ajax.php',
+                                 { method: 'POST', body: data });
+        const json = await res.json();
+        const message = json.data?.message ?? (json.success ? 'Paldies!' : 'Kļūda. Mēģini vēlreiz.');
+        if (json.success) {
+          openPopup(message);
+          newsletterForm.reset();
+        } else {
+          if (inlineError) inlineError.textContent = message;
+        }
+      } catch {
+        if (inlineError) inlineError.textContent = 'Savienojuma kļūda. Lūdzu mēģini vēlreiz.';
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    });
+  }
+
   // ─── Raksti tabs (client-side, no page reload) ───────────────────────────────
   const tabBtns   = document.querySelectorAll('.lrma-tab');
   const tabPanels = document.querySelectorAll('.lrma-tab-panel');
