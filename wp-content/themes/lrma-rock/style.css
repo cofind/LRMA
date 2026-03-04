@@ -2116,6 +2116,106 @@ em  { font-style: normal; color: var(--red); }
 /* ============================================================
    FOOTER
    ============================================================ */
+/* Newsletter */
+.lrma-newsletter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+  padding: 40px 48px;
+  border-bottom: 1px solid var(--border);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.lrma-newsletter-kicker {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 4px;
+}
+
+.lrma-newsletter-title {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  color: var(--white);
+}
+
+.lrma-newsletter p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lrma-newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lrma-newsletter-form input[type="email"] {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  border-radius: 2px;
+}
+
+.lrma-newsletter-form input[type="email"]:focus {
+  outline: none;
+  border-color: var(--red);
+}
+
+.lrma-newsletter-form button {
+  background: var(--red);
+  color: var(--white);
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background var(--transition);
+}
+
+.lrma-newsletter-form button:hover {
+  background: var(--red2);
+}
+
+.lrma-newsletter-gdpr {
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  line-height: 1.5;
+}
+
+.lrma-newsletter-gdpr a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.lrma-newsletter-success {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #4ade80;
+  margin-top: 8px;
+  letter-spacing: .06em;
+}
+
 .site-footer {
   background: var(--surface);
   border-top: 1px solid var(--border);
@@ -2717,6 +2817,12 @@ em  { font-style: normal; color: var(--red); }
   .archive-grid {
     grid-template-columns: repeat(2, 1fr);
     margin: 24px 20px;
+  }
+
+  .lrma-newsletter {
+    grid-template-columns: 1fr;
+    padding: 32px 24px;
+    gap: 24px;
   }
 
   .footer-top {

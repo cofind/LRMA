@@ -557,11 +557,11 @@ $fallback_concerts = [
      ╚══════════════════════════════════════╝ -->
 <div class="stats-strip reveal">
     <div class="stat-block">
-        <span class="stat-num">7<em>+</em></span>
+        <span class="stat-num"><?php echo date( 'Y' ) - 2016; ?><em>+</em></span>
         <span class="stat-lbl">Gadi Aktīvi</span>
     </div>
     <div class="stat-block">
-        <span class="stat-num">10K<em>+</em></span>
+        <span class="stat-num"><?php echo esc_html( get_theme_mod( 'lrma_footer_followers', '10K' ) ); ?><em>+</em></span>
         <span class="stat-lbl">Sekotāji</span>
     </div>
     <div class="stat-block">
@@ -569,7 +569,7 @@ $fallback_concerts = [
         <span class="stat-lbl">Radio Tiešraide</span>
     </div>
     <div class="stat-block">
-        <span class="stat-num">500<em>+</em></span>
+        <span class="stat-num"><?php echo number_format( wp_count_posts()->publish ); ?><em>+</em></span>
         <span class="stat-lbl">Publicēti Raksti</span>
     </div>
 </div>

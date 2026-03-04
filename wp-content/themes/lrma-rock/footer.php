@@ -1,6 +1,28 @@
 </main>
 
 <footer class="site-footer">
+
+    <div class="lrma-newsletter">
+        <div class="lrma-newsletter-text">
+            <div class="lrma-newsletter-kicker">Jaunumi uz e-pastu</div>
+            <div class="lrma-newsletter-title">Pieteikties</div>
+            <p>Saņem jaunākās LRMA ziņas tieši savā e-pastā.</p>
+        </div>
+        <form class="lrma-newsletter-form" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" method="POST">
+            <input type="hidden" name="action" value="lrma_newsletter">
+            <?php wp_nonce_field( 'lrma_newsletter_nonce' ); ?>
+            <input type="email" name="email" placeholder="jūsu@epasts.lv" required>
+            <label class="lrma-newsletter-gdpr">
+                <input type="checkbox" name="gdpr" required>
+                Piekrītu datu apstrādei saskaņā ar <a href="<?php echo esc_url( home_url( '/privatuma-politika/' ) ); ?>">privātuma politiku</a>
+            </label>
+            <button type="submit">Pieteikties →</button>
+        </form>
+        <?php if ( isset( $_GET['newsletter'] ) && $_GET['newsletter'] === 'success' ) : ?>
+            <div class="lrma-newsletter-success">✓ Paldies! Jūs esat pieteikušies.</div>
+        <?php endif; ?>
+    </div>
+
     <div class="footer-top">
 
         <div class="footer-brand">
