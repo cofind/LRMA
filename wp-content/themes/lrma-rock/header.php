@@ -6,6 +6,10 @@ $logo_url = '';
 $logo_id = get_theme_mod( 'custom_logo' );
 if ( $logo_id ) {
     $logo_url = wp_get_attachment_image_url( $logo_id, 'full' );
+    // Append attachment ID as cache-buster: URL changes whenever the logo is swapped.
+    if ( $logo_url ) {
+        $logo_url = add_query_arg( 'v', $logo_id, $logo_url );
+    }
 }
 
 // 2. Theme directory scan
